@@ -15,6 +15,7 @@ var cells: Array = []
 var current_slab: Dictionary = {}
 
 const GRID_CELL = preload("res://Scenes/grid_cell.tscn")
+const CUSTOM_FONT = preload("res://Assets/Fonts/Creepster-Regular.ttf")
 
 func _ready():
 	animate_limbo_letters()
@@ -25,14 +26,23 @@ func _ready():
 
 func animate_limbo_letters():
 	# Float animation for LIMBO letters
+	# We animate the 'Label' inside the panel, not the panel itself
 	for i in range(limbo_letters.get_child_count()):
-		var letter = limbo_letters.get_child(i)
-		var start_y = letter.position.y
+		var panel = limbo_letters.get_child(i)
+		var label = panel.get_node("Label") # Get the text label inside
+		
+		var start_y = label.position.y
 		var tween = create_tween()
 		tween.set_loops()
-		tween.tween_property(letter, "position:y", start_y - 3, 1.0 + i * 0.2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(letter, "position:y", start_y + 3, 1.0 + i * 0.2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-
+		
+		# Float Up
+		tween.tween_property(label, "position:y", start_y - 4, 1.0 + i * 0.2)\
+			.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+			
+		# Float Down
+		tween.tween_property(label, "position:y", start_y + 4, 1.0 + i * 0.2)\
+			.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+			
 func setup_grid():
 	cells.clear()
 	
@@ -87,7 +97,7 @@ func update_current_slab_display():
 	shadow.size = Vector2(120, 100)
 	var shadow_style = StyleBoxFlat.new()
 	shadow_style.bg_color = Color(0, 0, 0, 0.6)
-	shadow_style.corner_radius_all = 12
+	shadow_style.set_corner_radius_all(12)
 	shadow.add_theme_stylebox_override("panel", shadow_style)
 	slab_base.add_child(shadow)
 	
@@ -105,8 +115,8 @@ func update_current_slab_display():
 	var style = StyleBoxFlat.new()
 	style.bg_color = color_map.get(current_slab.letter, Color.WHITE)
 	style.border_color = Color("#ffffff")
-	style.border_width_all = 5
-	style.corner_radius_all = 12
+	style.set_border_width_all(5)
+	style.set_corner_radius_all(12)
 	style.shadow_size = 10
 	style.shadow_offset = Vector2(3, 3)
 	style.shadow_color = Color(0, 0, 0, 0.7)
@@ -124,24 +134,27 @@ func update_current_slab_display():
 	slab_panel.add_child(highlight)
 	
 	var vbox = VBoxContainer.new()
-	vbox.position = Vector2(0, 15)
+	vbox.position = Vector2(0, 0)
 	vbox.size = Vector2(120, 100)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", -5)
 	
 	var letter_label = Label.new()
 	letter_label.text = current_slab.letter
 	letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	letter_label.add_theme_font_size_override("font_size", 42)
+	letter_label.add_theme_font_override("font", CUSTOM_FONT)
+	letter_label.add_theme_font_size_override("font_size", 52)
 	letter_label.add_theme_color_override("font_color", Color("#1a1520"))
-	letter_label.add_theme_constant_override("outline_size", 4)
+	letter_label.add_theme_constant_override("outline_size", 7)
 	letter_label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.9))
 	
 	var number_label = Label.new()
 	number_label.text = str(current_slab.number)
 	number_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	number_label.add_theme_font_size_override("font_size", 28)
+	number_label.add_theme_font_override("font", CUSTOM_FONT)
+	number_label.add_theme_font_size_override("font_size", 32)
 	number_label.add_theme_color_override("font_color", Color("#1a1520"))
-	number_label.add_theme_constant_override("outline_size", 3)
+	number_label.add_theme_constant_override("outline_size", 8)
 	number_label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.9))
 	
 	vbox.add_child(letter_label)

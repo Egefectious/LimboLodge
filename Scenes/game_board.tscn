@@ -159,16 +159,16 @@ layout_mode = 0
 offset_left = 12.0
 offset_top = 18.0
 offset_right = 424.0
-offset_bottom = 538.0
+offset_bottom = 434.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_optkc")
 
 [node name="LimboLetters" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 140.0
-offset_top = 115.0
-offset_right = 180.0
-offset_bottom = 617.0
-theme_override_constants/separation = 40
+offset_left = 190.0
+offset_top = 110.86
+offset_right = 230.0
+offset_bottom = 612.86035
+theme_override_constants/separation = 10
 
 [node name="LetterL" type="Panel" parent="LimboLetters"]
 custom_minimum_size = Vector2(40, 70)
@@ -178,7 +178,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_legbf")
 [node name="Label" type="Label" parent="LimboLetters/LetterL"]
 layout_mode = 0
 offset_right = 40.0
-offset_bottom = 23.0
+offset_bottom = 70.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("2_legbf")
@@ -195,7 +195,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_s5vlf")
 [node name="Label" type="Label" parent="LimboLetters/LetterI"]
 layout_mode = 0
 offset_right = 40.0
-offset_bottom = 23.0
+offset_bottom = 70.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("2_legbf")
@@ -212,7 +212,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_nhcq1")
 [node name="Label" type="Label" parent="LimboLetters/LetterM"]
 layout_mode = 0
 offset_right = 40.0
-offset_bottom = 23.0
+offset_bottom = 71.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("2_legbf")
@@ -229,7 +229,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_0amks")
 [node name="Label" type="Label" parent="LimboLetters/LetterB"]
 layout_mode = 0
 offset_right = 40.0
-offset_bottom = 23.0
+offset_bottom = 69.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("2_legbf")
@@ -246,7 +246,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_kgtnr")
 [node name="Label" type="Label" parent="LimboLetters/LetterO"]
 layout_mode = 0
 offset_right = 40.0
-offset_bottom = 23.0
+offset_bottom = 67.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("2_legbf")
@@ -257,10 +257,10 @@ vertical_alignment = 1
 
 [node name="GridContainer" type="GridContainer" parent="."]
 layout_mode = 0
-offset_left = 280.0
-offset_top = 115.0
-offset_right = 320.0
-offset_bottom = 155.0
+offset_left = 256.0
+offset_top = 107.0
+offset_right = 296.0
+offset_bottom = 147.0
 theme_override_constants/h_separation = 6
 theme_override_constants/v_separation = 6
 columns = 5

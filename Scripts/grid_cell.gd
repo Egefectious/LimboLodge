@@ -14,6 +14,8 @@ var is_hovered: bool = false
 @onready var letter_indicator = $LetterIndicator
 @onready var slab_container = $SlabContainer
 
+const CUSTOM_FONT = preload("res://Assets/Fonts/Creepster-Regular.ttf")
+
 func _ready():
 	custom_minimum_size = Vector2(75, 75)
 	gui_input.connect(_on_gui_input)
@@ -78,7 +80,7 @@ func update_slab_display():
 	shadow.size = Vector2(65, 65)
 	var shadow_style = StyleBoxFlat.new()
 	shadow_style.bg_color = Color(0, 0, 0, 0.5)
-	shadow_style.corner_radius_all = 8
+	shadow_style.set_corner_radius_all(8)
 	shadow.add_theme_stylebox_override("panel", shadow_style)
 	slab_base.add_child(shadow)
 	
@@ -98,8 +100,8 @@ func update_slab_display():
 	
 	var style = StyleBoxFlat.new()
 	style.bg_color = base_color
-	style.corner_radius_all = 8
-	style.border_width_all = 3
+	style.set_corner_radius_all(8)
+	style.set_border_width_all(3)
 	style.shadow_size = 6
 	style.shadow_offset = Vector2(2, 2)
 	style.shadow_color = Color(0, 0, 0, 0.6)
@@ -108,7 +110,7 @@ func update_slab_display():
 	var is_perfect = (placed_slab.letter == letter and placed_slab.number == grid_number)
 	if is_perfect:
 		style.border_color = Color("#ffff00")
-		style.border_width_all = 4
+		style.set_border_width_all(4)
 		style.shadow_size = 10
 		style.shadow_color = Color(1, 1, 0, 0.4)
 		
@@ -119,8 +121,8 @@ func update_slab_display():
 		var glow_style = StyleBoxFlat.new()
 		glow_style.bg_color = Color(1, 1, 0, 0)
 		glow_style.border_color = Color(1, 1, 0, 0.3)
-		glow_style.border_width_all = 3
-		glow_style.corner_radius_all = 10
+		glow_style.set_border_width_all(3)
+		glow_style.set_corner_radius_all(10)
 		glow.add_theme_stylebox_override("panel", glow_style)
 		slab_base.add_child(glow)
 		
@@ -147,14 +149,17 @@ func update_slab_display():
 	
 	# Content
 	var vbox = VBoxContainer.new()
-	vbox.position = Vector2(0, 8)
+	vbox.position = Vector2(0, 0)
 	vbox.size = Vector2(65, 65)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", -2)
+	
 	
 	var letter_label = Label.new()
 	letter_label.text = placed_slab.letter
 	letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	letter_label.add_theme_font_size_override("font_size", 28)
+	letter_label.add_theme_font_override("font", CUSTOM_FONT)
+	letter_label.add_theme_font_size_override("font_size", 32)
 	letter_label.add_theme_color_override("font_color", Color("#1a1520"))
 	letter_label.add_theme_constant_override("outline_size", 3)
 	letter_label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.8))
@@ -162,7 +167,8 @@ func update_slab_display():
 	var number_label = Label.new()
 	number_label.text = str(placed_slab.number)
 	number_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	number_label.add_theme_font_size_override("font_size", 20)
+	number_label.add_theme_font_override("font", CUSTOM_FONT)
+	number_label.add_theme_font_size_override("font_size", 24)
 	number_label.add_theme_color_override("font_color", Color("#1a1520"))
 	number_label.add_theme_constant_override("outline_size", 2)
 	number_label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.8))
