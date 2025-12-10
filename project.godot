@@ -11,14 +11,16 @@ config_version=5
 [application]
 
 config/name="LimboLodge"
-run/main_scene="uid://ce56chn8tou8m"
+run/main_scene="uid://cio7dl4ta6v1q"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
+Global="*res://AutoLoad/Global.gd"
 
-[editor_plugins]
+[display]
 
-enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg")
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
