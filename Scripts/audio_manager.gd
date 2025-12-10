@@ -25,7 +25,7 @@ func _ready():
 	_load_sound("win", "res://Assets/Audio/win.mp3")
 	
 	# Start Music Immediately
-	#play_music("res://Assets/Audio/music.mp3") # Change extension to .mp3 if needed
+	play_music("res://Assets/Audio/music.mp3") # Change extension to .mp3 if needed
 
 func _load_sound(key: String, path: String):
 	if FileAccess.file_exists(path):

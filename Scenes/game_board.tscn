@@ -17,17 +17,20 @@ corner_radius_bottom_left = 8
 shadow_color = Color(0, 0, 0, 0.8352941)
 shadow_size = 8
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3q6lt"]
+bg_color = Color(0.16470589, 0.1254902, 0.1882353, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.3529412, 0.2901961, 0.41568628, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_optkc"]
 bg_color = Color(0.17064083, 0.060048573, 0.352401, 1)
-border_width_left = 5
-border_width_top = 5
-border_width_right = 5
-border_width_bottom = 5
-border_color = Color(0.31694594, 0.012118, 0.36116263, 1)
-corner_radius_top_left = 11
-corner_radius_top_right = 11
-corner_radius_bottom_right = 11
-corner_radius_bottom_left = 11
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_legbf"]
 bg_color = Color(1, 0.33333334, 0.33333334, 1)
@@ -89,18 +92,6 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3q6lt"]
-bg_color = Color(0.16470589, 0.1254902, 0.1882353, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.3529412, 0.2901961, 0.41568628, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f51tk"]
 bg_color = Color(0.16470589, 0.1254902, 0.1882353, 1)
 border_width_left = 3
@@ -157,11 +148,39 @@ color = Color(0.21634656, 0.058329806, 0.24728647, 1)
 
 [node name="CenterPanel" type="Panel" parent="."]
 layout_mode = 0
-offset_left = 92.0
-offset_top = 75.0
-offset_right = 892.0
-offset_bottom = 635.0
+offset_left = 240.0
+offset_top = 80.0
+offset_right = 1040.0
+offset_bottom = 640.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_pxj3o")
+
+[node name="BenchPanel" type="Panel" parent="CenterPanel"]
+custom_minimum_size = Vector2(400, 100)
+layout_mode = 0
+offset_left = 13.0
+offset_top = 445.0
+offset_right = 427.0
+offset_bottom = 545.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_3q6lt")
+
+[node name="BenchLabel" type="Label" parent="CenterPanel/BenchPanel"]
+layout_mode = 0
+offset_left = 153.0
+offset_top = 6.0
+offset_right = 251.0
+offset_bottom = 29.0
+theme_override_colors/font_color = Color(0.6666667, 0.6666667, 0.6666667, 1)
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 18
+text = "Benched Slabs"
+
+[node name="BenchContainer" type="HBoxContainer" parent="CenterPanel/BenchPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 30.0
+offset_right = 403.0
+offset_bottom = 91.0
+theme_override_constants/separation = 5
 
 [node name="GridBackground" type="Panel" parent="CenterPanel"]
 layout_mode = 0
@@ -173,10 +192,10 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_optkc")
 
 [node name="LimboLetters" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 42.0
-offset_top = 105.86
-offset_right = 82.0
-offset_bottom = 607.86035
+offset_left = 190.0
+offset_top = 110.86
+offset_right = 230.0
+offset_bottom = 612.86035
 theme_override_constants/separation = 10
 
 [node name="LetterL" type="Panel" parent="LimboLetters"]
@@ -266,10 +285,10 @@ vertical_alignment = 1
 
 [node name="GridContainer" type="GridContainer" parent="."]
 layout_mode = 0
-offset_left = 108.0
-offset_top = 102.0
-offset_right = 148.0
-offset_bottom = 142.0
+offset_left = 256.0
+offset_top = 107.0
+offset_right = 296.0
+offset_bottom = 147.0
 theme_override_constants/h_separation = 6
 theme_override_constants/v_separation = 6
 columns = 5
@@ -277,11 +296,11 @@ columns = 5
 [node name="RightPanel" type="VBoxContainer" parent="."]
 custom_minimum_size = Vector2(340, 560)
 layout_mode = 0
-offset_left = 532.0
-offset_top = 85.0
-offset_right = 872.0
-offset_bottom = 645.0
-theme_override_constants/separation = 15
+offset_left = 680.0
+offset_top = 90.0
+offset_right = 720.0
+offset_bottom = 130.0
+theme_override_constants/separation = 10
 
 [node name="TitleLabel" type="Label" parent="RightPanel"]
 layout_mode = 2
@@ -297,7 +316,7 @@ custom_minimum_size = Vector2(0, 5)
 layout_mode = 2
 
 [node name="CurrentSlabPanel" type="Panel" parent="RightPanel"]
-custom_minimum_size = Vector2(300, 140)
+custom_minimum_size = Vector2(300, 120)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_3q6lt")
 
@@ -309,7 +328,7 @@ offset_right = 107.0
 offset_bottom = 31.0
 theme_override_colors/font_color = Color(0.6666667, 0.6666667, 0.6666667, 1)
 theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 20
 text = "Current Slab"
 
 [node name="SlabDisplay" type="CenterContainer" parent="RightPanel/CurrentSlabPanel"]
@@ -327,7 +346,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="StatsPanel" type="Panel" parent="RightPanel"]
-custom_minimum_size = Vector2(300, 200)
+custom_minimum_size = Vector2(300, 250)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_f51tk")
 
@@ -335,7 +354,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_f51tk")
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="ScoreLabel" type="Label" parent="RightPanel/StatsPanel/VBoxContainer"]
 layout_mode = 2
@@ -379,26 +398,39 @@ layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="RightPanel"]
 layout_mode = 2
+theme_override_constants/separation = 5
 
 [node name="DrawButton" type="Button" parent="RightPanel/HBoxContainer"]
-custom_minimum_size = Vector2(100, 50)
+custom_minimum_size = Vector2(95, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_gf42p")
-text = "DRAW SLAB"
+text = "DRAW"
 
-[node name="Node2D" type="Control" parent="RightPanel/HBoxContainer"]
-custom_minimum_size = Vector2(130, 0)
+[node name="Control" type="Control" parent="RightPanel/HBoxContainer"]
+custom_minimum_size = Vector2(15, 0)
+layout_mode = 2
+
+[node name="BenchButton" type="Button" parent="RightPanel/HBoxContainer"]
+custom_minimum_size = Vector2(95, 50)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_gf42p")
+text = "BENCH"
+
+[node name="Control2" type="Control" parent="RightPanel/HBoxContainer"]
+custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
 [node name="ScoreButton" type="Button" parent="RightPanel/HBoxContainer"]
-custom_minimum_size = Vector2(100, 50)
+custom_minimum_size = Vector2(95, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_d02nu")
-text = "SCORE ROUND"
+text = "SCORE"
 
 [node name="BottomInfo" type="Label" parent="."]
 layout_mode = 0
@@ -408,5 +440,5 @@ offset_right = 50.0
 offset_bottom = 713.0
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
 theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 14
-text = "Place slabs on matching letter and number for perfect match (+5 coins)"
+theme_override_font_sizes/font_size = 13
+text = "Base score = slab number | Letter match +10 | Perfect match +25 | Complete lines for multipliers!"
