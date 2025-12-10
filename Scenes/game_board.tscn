@@ -19,6 +19,15 @@ shadow_size = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_optkc"]
 bg_color = Color(0.17064083, 0.060048573, 0.352401, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.31694594, 0.012118, 0.36116263, 1)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 11
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_legbf"]
 bg_color = Color(1, 0.33333334, 0.33333334, 1)
@@ -148,10 +157,10 @@ color = Color(0.21634656, 0.058329806, 0.24728647, 1)
 
 [node name="CenterPanel" type="Panel" parent="."]
 layout_mode = 0
-offset_left = 240.0
-offset_top = 80.0
-offset_right = 1040.0
-offset_bottom = 640.0
+offset_left = 92.0
+offset_top = 75.0
+offset_right = 892.0
+offset_bottom = 635.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_pxj3o")
 
 [node name="GridBackground" type="Panel" parent="CenterPanel"]
@@ -164,10 +173,10 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_optkc")
 
 [node name="LimboLetters" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 190.0
-offset_top = 110.86
-offset_right = 230.0
-offset_bottom = 612.86035
+offset_left = 42.0
+offset_top = 105.86
+offset_right = 82.0
+offset_bottom = 607.86035
 theme_override_constants/separation = 10
 
 [node name="LetterL" type="Panel" parent="LimboLetters"]
@@ -257,10 +266,10 @@ vertical_alignment = 1
 
 [node name="GridContainer" type="GridContainer" parent="."]
 layout_mode = 0
-offset_left = 256.0
-offset_top = 107.0
-offset_right = 296.0
-offset_bottom = 147.0
+offset_left = 108.0
+offset_top = 102.0
+offset_right = 148.0
+offset_bottom = 142.0
 theme_override_constants/h_separation = 6
 theme_override_constants/v_separation = 6
 columns = 5
@@ -268,10 +277,10 @@ columns = 5
 [node name="RightPanel" type="VBoxContainer" parent="."]
 custom_minimum_size = Vector2(340, 560)
 layout_mode = 0
-offset_left = 680.0
-offset_top = 90.0
-offset_right = 720.0
-offset_bottom = 130.0
+offset_left = 532.0
+offset_top = 85.0
+offset_right = 872.0
+offset_bottom = 645.0
 theme_override_constants/separation = 15
 
 [node name="TitleLabel" type="Label" parent="RightPanel"]

@@ -12,6 +12,7 @@ var max_draws: int = 8
 
 var deck: Array = []
 var placed_slabs: Array = []
+var bench: Array = []
 
 var artifacts: Array = []
 var number_bias: Dictionary = {}
@@ -32,6 +33,8 @@ func reset_game():
 	placed_slabs.clear()
 	placed_slabs.resize(25)
 	placed_slabs.fill(null)
+	
+	setup_bench()
 
 func create_starting_deck():
 	deck.clear()
@@ -42,26 +45,23 @@ func create_starting_deck():
 	deck.shuffle()
 
 func generate_grid_numbers():
-	# FIX: Create pool of numbers 1-15, use each at least once, then fill remaining randomly
 	grid_numbers.clear()
 	
-	# Start with 1-15 guaranteed
+	# 1. Create a pool of numbers 1-15
 	var number_pool = []
 	for i in range(1, 16):
 		number_pool.append(i)
 	
-	# Shuffle the pool
 	number_pool.shuffle()
 	
-	# Use first 15 numbers from shuffled pool
+	# 2. Use the first 15 unique numbers
 	for i in range(15):
 		grid_numbers.append(number_pool[i])
 	
-	# Fill remaining 10 cells with random numbers 1-15
+	# 3. Fill the last 10 spots randomly (SAFE: No while loop)
 	for i in range(10):
 		grid_numbers.append(randi_range(1, 15))
 	
-	# Final shuffle to distribute evenly
 	grid_numbers.shuffle()
 
 func draw_slab() -> Dictionary:
@@ -82,6 +82,8 @@ func start_new_encounter():
 	placed_slabs.fill(null)
 	generate_grid_numbers()
 	opponent_target = 100 + (current_encounter * 50)
+	setup_bench()
+
 
 func calculate_score() -> Dictionary:
 	var perfect_matches = 0
@@ -126,3 +128,8 @@ func calculate_score() -> Dictionary:
 		"perfect_lines": perfect_lines,
 		"base_coins": base_coins
 	}
+
+func setup_bench():
+	bench.clear()
+	bench.resize(5)
+	bench.fill(null)
