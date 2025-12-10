@@ -1,27 +1,22 @@
 extends Node
 
-# Game State
 var current_encounter: int = 1
 var current_round: int = 1
 var total_coins: int = 0
 var essence: int = 0
 
-# Current Game
 var current_score: int = 0
 var opponent_target: int = 100
 var draws_remaining: int = 8
 var max_draws: int = 8
 
-# Deck Management
 var deck: Array = []
-var placed_slabs: Array = [] # Stays for encounter (25 slots for 5x5)
+var placed_slabs: Array = []
 
-# Artifacts and Modifiers
 var artifacts: Array = []
-var number_bias: Dictionary = {} # e.g., {"min": 1, "max": 5}
-var letter_bias: Array = [] # e.g., ["L", "I"]
+var number_bias: Dictionary = {}
+var letter_bias: Array = []
 
-# Grid numbers (generated per encounter)
 var grid_numbers: Array = []
 
 func _ready():
@@ -42,25 +37,42 @@ func create_starting_deck():
 	deck.clear()
 	var letters = ["L", "I", "M", "B", "O"]
 	for letter in letters:
-		for num in range(1, 16): # 1-15
+		for num in range(1, 16):
 			deck.append({"letter": letter, "number": num, "rarity": "common"})
 	deck.shuffle()
 
 func generate_grid_numbers():
+	# FIX: Create pool of numbers 1-15, use each at least once, then fill remaining randomly
 	grid_numbers.clear()
-	for i in range(25): # 5x5 = 25 cells
+	
+	# Start with 1-15 guaranteed
+	var number_pool = []
+	for i in range(1, 16):
+		number_pool.append(i)
+	
+	# Shuffle the pool
+	number_pool.shuffle()
+	
+	# Use first 15 numbers from shuffled pool
+	for i in range(15):
+		grid_numbers.append(number_pool[i])
+	
+	# Fill remaining 10 cells with random numbers 1-15
+	for i in range(10):
 		grid_numbers.append(randi_range(1, 15))
+	
+	# Final shuffle to distribute evenly
+	grid_numbers.shuffle()
 
 func draw_slab() -> Dictionary:
 	if deck.is_empty():
-		create_starting_deck() # Reshuffle if empty
+		create_starting_deck()
 	draws_remaining -= 1
 	return deck.pop_front()
 
 func start_new_round():
 	current_score = 0
 	draws_remaining = max_draws
-	# Board persists across rounds in same encounter
 
 func start_new_encounter():
 	current_round = 1
@@ -76,7 +88,6 @@ func calculate_score() -> Dictionary:
 	var perfect_lines = 0
 	var base_coins = 0
 	
-	# Check each placed slab for perfect match
 	for i in range(25):
 		if placed_slabs[i] != null:
 			var slab = placed_slabs[i]
@@ -87,7 +98,6 @@ func calculate_score() -> Dictionary:
 				perfect_matches += 1
 				base_coins += 5
 	
-	# Check for perfect lines (horizontal)
 	for row in range(5):
 		var line_perfect = true
 		for col in range(5):
@@ -104,11 +114,9 @@ func calculate_score() -> Dictionary:
 		if line_perfect:
 			perfect_lines += 1
 	
-	# Calculate total with multipliers
 	var line_bonus = 0
 	if perfect_lines > 0:
-		# Each perfect line gives 4x the coins from that line's perfect matches
-		line_bonus = perfect_lines * 5 * 5 * 4 # 5 cells * 5 coins * 4x
+		line_bonus = perfect_lines * 5 * 5 * 4
 	
 	var total = base_coins + line_bonus
 	
