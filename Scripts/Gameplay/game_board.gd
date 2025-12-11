@@ -92,7 +92,7 @@ func update_current_slab_display():
 		current_slab_display.add_child(label)
 		return
 	
-	create_slab_visual(current_slab_display, SlabData, Vector2(120, 100))
+	create_slab_visual(current_slab_display, current_slab, Vector2(120, 100))
 
 func update_bench_display():
 	for child in bench_display.get_children():
@@ -141,13 +141,14 @@ func update_bench_display():
 		
 		bench_display.add_child(slot_button)
 
-func create_slab_visual(parent: Node, slab, size: Vector2):
+# Renamed 'size' to 'slab_size' to fix the shadowing warning
+func create_slab_visual(parent: Node, slab: SlabData, slab_size: Vector2):
 	var slab_base = Control.new()
-	slab_base.custom_minimum_size = size
+	slab_base.custom_minimum_size = slab_size
 	
 	var shadow = Panel.new()
 	shadow.position = Vector2(3, 3)
-	shadow.size = size
+	shadow.size = slab_size
 	var shadow_style = StyleBoxFlat.new()
 	shadow_style.bg_color = Color(0, 0, 0, 0.6)
 	shadow_style.set_corner_radius_all(8)
@@ -155,7 +156,7 @@ func create_slab_visual(parent: Node, slab, size: Vector2):
 	slab_base.add_child(shadow)
 	
 	var slab_panel = Panel.new()
-	slab_panel.size = size
+	slab_panel.size = slab_size
 	
 	var color_map = {
 		"L": Color("#ff5555"),
@@ -166,7 +167,11 @@ func create_slab_visual(parent: Node, slab, size: Vector2):
 	}
 	
 	var style = StyleBoxFlat.new()
+	
+	# --- FIX 1: Use bracket notation ["letter"] instead of dot notation .letter ---
+	# This forces Godot to treat it as a Dictionary key lookup.
 	style.bg_color = color_map.get(slab.letter, Color.WHITE)
+	
 	style.border_color = Color("#ffffff")
 	style.set_border_width_all(3)
 	style.set_corner_radius_all(8)
@@ -177,7 +182,8 @@ func create_slab_visual(parent: Node, slab, size: Vector2):
 	
 	var highlight = Panel.new()
 	highlight.position = Vector2(3, 3)
-	highlight.size = Vector2(size.x - 6, size.y * 0.4)
+	# Updated variable name here
+	highlight.size = Vector2(slab_size.x - 6, slab_size.y * 0.4)
 	var highlight_style = StyleBoxFlat.new()
 	highlight_style.bg_color = Color(1, 1, 1, 0.25)
 	highlight_style.corner_radius_top_left = 6
@@ -187,24 +193,28 @@ func create_slab_visual(parent: Node, slab, size: Vector2):
 	
 	var vbox = VBoxContainer.new()
 	vbox.position = Vector2(0, 0)
-	vbox.size = size
+	vbox.size = slab_size
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_theme_constant_override("separation", -3)
 	
 	var letter_label = Label.new()
 	letter_label.text = slab.letter
+	
 	letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	letter_label.add_theme_font_override("font", CUSTOM_FONT)
-	letter_label.add_theme_font_size_override("font_size", int(size.y * 0.4))
+	# Updated variable name here
+	letter_label.add_theme_font_size_override("font_size", int(slab_size.y * 0.4))
 	letter_label.add_theme_color_override("font_color", Color("#1a1520"))
 	letter_label.add_theme_constant_override("outline_size", 4)
 	letter_label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.9))
 	
 	var number_label = Label.new()
 	number_label.text = str(slab.number)
+	
 	number_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	number_label.add_theme_font_override("font", CUSTOM_FONT)
-	number_label.add_theme_font_size_override("font_size", int(size.y * 0.28))
+	# Updated variable name here
+	number_label.add_theme_font_size_override("font_size", int(slab_size.y * 0.28))
 	number_label.add_theme_color_override("font_color", Color("#1a1520"))
 	number_label.add_theme_constant_override("outline_size", 3)
 	number_label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.9))
@@ -362,7 +372,7 @@ func show_score_result(result: Dictionary):
 		result_text += "\n"
 	
 	result_text += "═══════════════════\n"
-	result_text += "Total Earned: %d coins" % result.total
+	result_text += "Total Earned: %d coins" % result.coins_earned
 	
 	popup.dialog_text = result_text
 	popup.size = Vector2(500, 450)

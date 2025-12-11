@@ -1,14 +1,11 @@
-class_name SlabData extends Resource
+class_name SlabData
+extends Resource
 
-@export var letter: String = "L"
-@export var number: int = 1
-@export var rarity: String = "Common"
-@export_multiline var description: String = ""
+@export var letter: String
+@export var number: int
+@export var rarity: String = "common"
 
-# FIX: Added 'rare' as the 3rd argument
-static func create(ltr: String, num: int, rare: String = "Common") -> SlabData:
-	var s = SlabData.new()
-	s.letter = ltr
-	s.number = num
-	s.rarity = rare
-	return s
+func _init(p_letter: String = "L", p_number: int = 1, p_rarity: String = "common"):
+	letter = p_letter
+	number = p_number
+	rarity = p_rarity

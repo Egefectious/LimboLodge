@@ -2,8 +2,9 @@ extends Node
 
 var current_encounter: int = 1
 var current_round: int = 1
-var total_coins: int = 0
+var coins: int = 0
 var essence: int = 0
+var obols: int = 0
 
 var current_score: int = 0
 var opponent_target: int = 100
@@ -28,8 +29,9 @@ func _ready():
 func reset_game():
 	current_encounter = 1
 	current_round = 1
-	total_coins = 0
+	coins = 0
 	essence = 0
+	obols = 0
 	create_starting_deck()
 	generate_grid_numbers()
 	placed_slabs.clear()
@@ -40,11 +42,13 @@ func reset_game():
 func create_starting_deck():
 	deck.clear()
 	var letters = ["L", "I", "M", "B", "O"]
-	for letter in letters:
+	for letter_char in letters:
 		for num in range(1, 16):
 
-			var new_slab = SlabData.create(letter, num, "Common")
-			deck.append(SlabData.create(letter, num, "Common"))
+			var new_slab = SlabData.new(letter_char, num, "common")
+			deck.append(new_slab)
+	
+	deck.shuffle()
 	
 	deck.shuffle()
 
@@ -95,6 +99,7 @@ func calculate_score() -> Dictionary:
 			var row = i / 5
 			var expected_letter = ["L", "I", "M", "B", "O"][row]
 			
+			# Note: We use dot notation here because placed_slabs contains SlabData objects now
 			var base_score = slab.number
 			var is_letter_correct = (slab.letter == expected_letter)
 			var is_number_correct = (slab.number == grid_numbers[i])
@@ -114,15 +119,20 @@ func calculate_score() -> Dictionary:
 	
 	# Calculate line bonuses
 	var line_bonuses = calculate_line_bonuses(single_scores)
-	
 	total_score += line_bonuses.total_bonus
 	
+	# --- NEW: Calculate Economy (Coins & Obols) ---
+	# Example logic: 1 Coin per 10 points, 1 Obol per completed line
+	var coins_earned = int(total_score / 10)
+	var obols_earned = line_bonuses.details.size()
+	
+	# --- FIX: Return the specific keys game_board.gd is looking for ---
 	return {
-		"total": total_score,
-		"base_score": total_score - line_bonuses.total_bonus,
-		"line_bonus": line_bonuses.total_bonus,
-		"perfect_count": perfect_count,
-		"letter_correct_count": letter_correct_count,
+		"total_score": total_score,          # game_board looks for "total_score"
+		"coins_earned": coins_earned,        # game_board looks for "coins_earned"
+		"obols_earned": obols_earned,        # game_board looks for "obols_earned"
+		"perfect_matches": perfect_count,    # game_board looks for "perfect_matches"
+		"perfect_lines": line_bonuses.details.size(),
 		"line_details": line_bonuses.details
 	}
 
