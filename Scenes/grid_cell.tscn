@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://defkq2ohdpcro"]
 
-[ext_resource type="Script" uid="uid://b3v6p4ih0dwkp" path="res://Scripts/grid_cell.gd" id="1_a7rwb"]
+[ext_resource type="Script" uid="uid://b3v6p4ih0dwkp" path="res://Scripts/Gameplay/grid_cell.gd" id="1_a7rwb"]
 [ext_resource type="FontFile" uid="uid://nqpk7yn1abs4" path="res://Assets/Fonts/Creepster-Regular.ttf" id="2_vqexn"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a7rwb"]
