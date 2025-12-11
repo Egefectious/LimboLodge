@@ -1,3 +1,4 @@
+
 extends Control
 
 @onready var grid_container = $GridContainer
@@ -17,69 +18,138 @@ var cells: Array = []
 var current_slab: SlabData = null
 var must_place_or_bench: bool = false
 var is_animating: bool = false
+var score_manager: ScoreManager
+# New UI Elements
+var next_round_button: Button
+var deck_popup: PopupPanel
+var score_modal: Panel
 
 const GRID_CELL = preload("res://Scenes/grid_cell.tscn")
 const CUSTOM_FONT = preload("res://Assets/Fonts/Creepster-Regular.ttf")
 
 func _ready():
-
 	animate_limbo_letters()
 	setup_grid()
+	setup_extra_ui() # Create Deck/NextRound/Score UI
 	update_ui()
+	
 	draw_button.pressed.connect(_on_draw_button_pressed)
 	bench_button.pressed.connect(_on_bench_button_pressed)
 	score_button.pressed.connect(_on_score_button_pressed)
+	score_manager = ScoreManager.new(self, score_label) # Pass board and score label
+	add_child(score_manager)
+	
+	# Start music if not playing
+	if AudioManager.music_player and not AudioManager.music_player.playing:
+		AudioManager.play_music("res://Assets/Audio/music.mp3")
+
+func setup_extra_ui():
+	# 1. Next Round Button (Hidden initially)
+	next_round_button = Button.new()
+	next_round_button.text = "HOLD & CONTINUE"
+	next_round_button.custom_minimum_size = Vector2(300, 50)
+	next_round_button.add_theme_font_override("font", CUSTOM_FONT)
+	next_round_button.add_theme_font_size_override("font_size", 24)
+	next_round_button.modulate = Color(0.6, 1.0, 0.6)
+	
+	# Insert into layout - add to BottomInfo area or creates a new container
+	var bottom_area = Control.new()
+	bottom_area.position = Vector2(680, 500) # Below RightPanel
+	add_child(bottom_area)
+	bottom_area.add_child(next_round_button)
+	next_round_button.pressed.connect(_on_next_round_pressed)
+	next_round_button.hide()
+	
+	# 2. Deck Popup
+	deck_popup = PopupPanel.new()
+	deck_popup.size = Vector2(800, 600)
+	add_child(deck_popup)
+	
+	var deck_scroll = ScrollContainer.new()
+	deck_scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	deck_popup.add_child(deck_scroll)
+	
+	var deck_grid = GridContainer.new()
+	deck_grid.columns = 6
+	deck_grid.name = "DeckGrid"
+	deck_grid.add_theme_constant_override("h_separation", 15)
+	deck_grid.add_theme_constant_override("v_separation", 15)
+	deck_scroll.add_child(deck_grid)
+	
+	# Deck Button (Top Right)
+	var view_deck_btn = Button.new()
+	view_deck_btn.text = "Deck"
+	view_deck_btn.position = Vector2(1180, 20)
+	view_deck_btn.size = Vector2(80, 40)
+	view_deck_btn.pressed.connect(_show_deck)
+	add_child(view_deck_btn)
 
 func animate_limbo_letters():
 	for i in range(limbo_letters.get_child_count()):
 		var panel = limbo_letters.get_child(i)
 		var label = panel.get_node("Label")
-		
 		var start_y = label.position.y
 		var tween = create_tween()
 		tween.set_loops()
-		
-		tween.tween_property(label, "position:y", start_y - 4, 1.0 + i * 0.2)\
-			.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-			
-		tween.tween_property(label, "position:y", start_y + 4, 1.0 + i * 0.2)\
-			.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-			
+		tween.tween_property(label, "position:y", start_y - 4, 1.0 + i * 0.2).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(label, "position:y", start_y + 4, 1.0 + i * 0.2).set_trans(Tween.TRANS_SINE)
+
 func setup_grid():
 	cells.clear()
+	for child in grid_container.get_children(): child.queue_free()
 	
 	for i in range(25):
 		var cell = GRID_CELL.instantiate()
 		var row = i / 5
 		var letter = ["L", "I", "M", "B", "O"][row]
-		
 		cell.setup(i, Global.grid_numbers[i], letter)
 		cell.cell_clicked.connect(_on_cell_clicked)
-		
 		grid_container.add_child(cell)
 		cells.append(cell)
 	
+	refresh_grid_visuals()
+
+func refresh_grid_visuals():
 	for i in range(25):
-		if Global.placed_slabs[i] != null:
-			cells[i].place_slab(Global.placed_slabs[i])
+		cells[i].place_slab(Global.placed_slabs[i])
 
 func update_ui():
+	# Labels
 	score_label.text = "\n Score: " + str(Global.current_score)
 	target_label.text = " Target: " + str(Global.opponent_target)
 	draws_label.text = " Draws: " + str(Global.draws_remaining) + "/" + str(Global.max_draws)
 	round_label.text = " Round: " + str(Global.current_round) + "/3"
-	encounter_label.text = " Encounter " + str(Global.current_encounter) + "/8"
+	encounter_label.text = " Encounter " + str(Global.current_encounter)
 	
+	# Current Slab Visual
 	update_current_slab_display()
 	update_bench_display()
 	
-	# Can only draw if: have draws remaining AND (no current slab OR haven't placed/benched yet)
-	draw_button.disabled = Global.draws_remaining <= 0 or (not current_slab == null and must_place_or_bench)
-	bench_button.disabled = current_slab == null or not must_place_or_bench or Global.benched_slabs.size() >= Global.max_bench_slots
-	score_button.disabled = false
+	# --- Button Logic ---
+	var has_slab = (current_slab != null)
+	var out_of_draws = (Global.draws_remaining <= 0)
+	var is_round_end = out_of_draws
+	
+	draw_button.disabled = out_of_draws or has_slab
+	bench_button.disabled = not has_slab or not must_place_or_bench or Global.benched_slabs.size() >= Global.max_bench_slots
+	
+	# Next Round / Score Logic
+	if is_round_end and Global.current_round < 3:
+		next_round_button.show()
+		score_button.text = "CASH IN"
+		score_button.modulate = Color(1, 0.8, 0.4)
+	else:
+		next_round_button.hide()
+		score_button.text = "SCORE"
+		score_button.modulate = Color.WHITE
+		
+	# Force Score attention if R3 end
+	if is_round_end and Global.current_round >= 3:
+		score_button.text = "FINISH!"
+		score_button.modulate = Color(1, 0.5, 0.5)
 
 func update_current_slab_display():
-	for child in current_slab_display.get_children():
+	for child in current_slab_display.get_children(): 
 		child.queue_free()
 	
 	if current_slab == null:
@@ -88,324 +158,273 @@ func update_current_slab_display():
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.add_theme_font_size_override("font_size", 20)
-		label.add_theme_color_override("font_color", Color("#666666"))
+		label.add_theme_color_override("font_color", Color.GRAY)
 		current_slab_display.add_child(label)
-		return
-	
-	create_slab_visual(current_slab_display, current_slab, Vector2(120, 100))
+	else:
+		# CHANGED: Use add_child instead of reparent
+		var visual = SlabBuilder.create_visual(current_slab, 1.2)
+		current_slab_display.add_child(visual)
 
 func update_bench_display():
-	for child in bench_display.get_children():
-		child.queue_free()
+	for child in bench_display.get_children(): child.queue_free()
 	
-	# Show bench slots (max 5)
 	for i in range(Global.max_bench_slots):
-		var slot_button = Button.new()
-		slot_button.custom_minimum_size = Vector2(50, 50)
+		var slot_btn = Button.new()
+		slot_btn.custom_minimum_size = Vector2(50, 50)
 		
-		# Style the button as a slot
-		var style_normal = StyleBoxFlat.new()
-		style_normal.bg_color = Color(0.1, 0.1, 0.1, 0.3)
-		style_normal.border_color = Color(0.3, 0.3, 0.3, 0.5)
-		style_normal.set_border_width_all(2)
-		style_normal.set_corner_radius_all(6)
-		slot_button.add_theme_stylebox_override("normal", style_normal)
-		
-		var style_hover = StyleBoxFlat.new()
-		style_hover.bg_color = Color(0.15, 0.15, 0.15, 0.5)
-		style_hover.border_color = Color(0.5, 0.5, 0.5, 0.7)
-		style_hover.set_border_width_all(2)
-		style_hover.set_corner_radius_all(6)
-		slot_button.add_theme_stylebox_override("hover", style_hover)
+		# Styles
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.1, 0.1, 0.1, 0.3)
+		style.border_color = Color(0.3, 0.3, 0.3, 0.5)
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(6)
+		slot_btn.add_theme_stylebox_override("normal", style)
 		
 		if i < Global.benched_slabs.size():
-			# Slot has a slab - show it
 			var slab = Global.benched_slabs[i]
 			var container = CenterContainer.new()
 			container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			create_slab_visual(container, slab, Vector2(45, 45))
-			slot_button.add_child(container)
-			slot_button.pressed.connect(func(): _on_benched_slab_clicked(i))
+			container.set_anchors_preset(Control.PRESET_FULL_RECT)
+			
+			# Using SlabBuilder class
+			var vis = SlabBuilder.create_visual(slab, 0.4)
+			container.add_child(vis)
+			slot_btn.add_child(container)
+			
+			# FIX: Use bind to capture the specific index 'i' correctly
+			slot_btn.pressed.connect(_on_benched_slab_clicked.bind(i))
 		else:
-			# Empty slot - show it's empty
-			var empty_label = Label.new()
-			empty_label.text = str(i + 1)
-			empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			empty_label.add_theme_font_size_override("font_size", 20)
-			empty_label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.3, 0.5))
-			empty_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			empty_label.size = Vector2(50, 50)
-			slot_button.add_child(empty_label)
-			slot_button.disabled = true
-		
-		bench_display.add_child(slot_button)
+			slot_btn.disabled = true
+			
+		bench_display.add_child(slot_btn)
 
-# Renamed 'size' to 'slab_size' to fix the shadowing warning
-func create_slab_visual(parent: Node, slab: SlabData, slab_size: Vector2):
-	var slab_base = Control.new()
-	slab_base.custom_minimum_size = slab_size
-	
-	var shadow = Panel.new()
-	shadow.position = Vector2(3, 3)
-	shadow.size = slab_size
-	var shadow_style = StyleBoxFlat.new()
-	shadow_style.bg_color = Color(0, 0, 0, 0.6)
-	shadow_style.set_corner_radius_all(8)
-	shadow.add_theme_stylebox_override("panel", shadow_style)
-	slab_base.add_child(shadow)
-	
-	var slab_panel = Panel.new()
-	slab_panel.size = slab_size
-	
-	var color_map = {
-		"L": Color("#ff5555"),
-		"I": Color("#ff9955"),
-		"M": Color("#ffff55"),
-		"B": Color("#55ff55"),
-		"O": Color("#aa55ff")
-	}
-	
-	var style = StyleBoxFlat.new()
-	
-	# --- FIX 1: Use bracket notation ["letter"] instead of dot notation .letter ---
-	# This forces Godot to treat it as a Dictionary key lookup.
-	style.bg_color = color_map.get(slab.letter, Color.WHITE)
-	
-	style.border_color = Color("#ffffff")
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(8)
-	style.shadow_size = 6
-	style.shadow_offset = Vector2(2, 2)
-	style.shadow_color = Color(0, 0, 0, 0.7)
-	slab_panel.add_theme_stylebox_override("panel", style)
-	
-	var highlight = Panel.new()
-	highlight.position = Vector2(3, 3)
-	# Updated variable name here
-	highlight.size = Vector2(slab_size.x - 6, slab_size.y * 0.4)
-	var highlight_style = StyleBoxFlat.new()
-	highlight_style.bg_color = Color(1, 1, 1, 0.25)
-	highlight_style.corner_radius_top_left = 6
-	highlight_style.corner_radius_top_right = 6
-	highlight.add_theme_stylebox_override("panel", highlight_style)
-	slab_panel.add_child(highlight)
-	
-	var vbox = VBoxContainer.new()
-	vbox.position = Vector2(0, 0)
-	vbox.size = slab_size
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", -3)
-	
-	var letter_label = Label.new()
-	letter_label.text = slab.letter
-	
-	letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	letter_label.add_theme_font_override("font", CUSTOM_FONT)
-	# Updated variable name here
-	letter_label.add_theme_font_size_override("font_size", int(slab_size.y * 0.4))
-	letter_label.add_theme_color_override("font_color", Color("#1a1520"))
-	letter_label.add_theme_constant_override("outline_size", 4)
-	letter_label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.9))
-	
-	var number_label = Label.new()
-	number_label.text = str(slab.number)
-	
-	number_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	number_label.add_theme_font_override("font", CUSTOM_FONT)
-	# Updated variable name here
-	number_label.add_theme_font_size_override("font_size", int(slab_size.y * 0.28))
-	number_label.add_theme_color_override("font_color", Color("#1a1520"))
-	number_label.add_theme_constant_override("outline_size", 3)
-	number_label.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.9))
-	
-	vbox.add_child(letter_label)
-	vbox.add_child(number_label)
-	slab_panel.add_child(vbox)
-	
-	slab_base.add_child(slab_panel)
-	parent.add_child(slab_base)
+# --- ACTIONS ---
 
 func _on_draw_button_pressed():
-	if Global.draws_remaining > 0 and (current_slab == null or not must_place_or_bench):
+	if Global.draws_remaining > 0 and current_slab == null:
 		current_slab = Global.draw_slab()
 		must_place_or_bench = true
 		AudioManager.play("draw")
 		update_ui()
-		
-		var tween = create_tween()
-		tween.tween_property(draw_button, "scale", Vector2(0.95, 0.95), 0.1)
-		tween.tween_property(draw_button, "scale", Vector2(1.0, 1.0), 0.1)
 
 func _on_bench_button_pressed():
-	if not current_slab == null and must_place_or_bench:
-		if Global.benched_slabs.size() >= Global.max_bench_slots:
-			AudioManager.play("error")
-			show_message("Bench is full! (5 max)", Color("#ff8888"))
-			return
-		
+	if current_slab and Global.benched_slabs.size() < Global.max_bench_slots:
 		Global.benched_slabs.append(current_slab)
-		AudioManager.play("slide")
-		show_message("Slab benched", Color("#88aaff"))
-		SlabData
+		current_slab = null
 		must_place_or_bench = false
+		AudioManager.play("slide")
 		update_ui()
+	else:
+		AudioManager.play("error")
 
 func _on_benched_slab_clicked(index: int):
-	if not current_slab == null:
+	# If we are holding a slab, we can't pick up another
+	if current_slab != null:
 		AudioManager.play("error")
-		show_message("Place or bench current slab first!", Color("#ff8888"))
+		show_message("Place current slab first!", Color.RED)
 		return
-	
+		
+	# Retrieve from bench
 	current_slab = Global.benched_slabs[index]
 	Global.benched_slabs.remove_at(index)
 	must_place_or_bench = true
 	AudioManager.play("slide")
-	show_message("Retrieved from bench", Color("#88aaff"))
+	show_message("Equipped from bench", Color.CYAN)
 	update_ui()
 
 func _on_cell_clicked(cell_index: int):
-	if current_slab == null:
-		AudioManager.play("error")
-		show_message("Draw a slab first!", Color("#ff8888"))
-		return
-	
-	if not must_place_or_bench:
-		AudioManager.play("error")
-		show_message("Draw a new slab first!", Color("#ff8888"))
-		return
-	
+	if current_slab == null: return
 	if Global.placed_slabs[cell_index] != null:
 		AudioManager.play("error")
-		show_message("Cell already occupied!", Color("#ff8888"))
 		return
-	
+		
+	# Place logic
 	Global.placed_slabs[cell_index] = current_slab
 	cells[cell_index].place_slab(current_slab)
 	
-	var row = cell_index / 5
-	var expected_letter = ["L", "I", "M", "B", "O"][row]
-	var is_perfect = (current_slab.letter == expected_letter and current_slab.number == Global.grid_numbers[cell_index])
-	var is_letter_correct = (current_slab.letter == expected_letter)
-	
+	# Feedback
+	var is_perfect = (current_slab.letter == cells[cell_index].letter and current_slab.number == cells[cell_index].grid_number)
 	if is_perfect:
 		AudioManager.play("place", Vector2(1.1, 1.3))
-		show_message("✨ Perfect! +" + str(current_slab.number + 25) + " pts", Color("#ffff00"))
-		create_particle_burst(cells[cell_index].global_position + Vector2(37, 37))
-	elif is_letter_correct:
-		AudioManager.play("place", Vector2(1.0, 1.2))
-		show_message("Letter Match! +" + str(current_slab.number + 10) + " pts", Color("#88ff88"))
+		create_particle_burst(cells[cell_index].global_position + Vector2(37,37))
 	else:
 		AudioManager.play("place")
-		show_message("+" + str(current_slab.number) + " pts", Color("#ffffff"))
 	
-	SlabData
+	current_slab = null
 	must_place_or_bench = false
 	update_ui()
 
-func create_particle_burst(pos: Vector2):
-	for i in range(12):
-		var particle = ColorRect.new()
-		particle.size = Vector2(6, 6)
-		particle.color = Color(1, 1, 0, 1)
-		particle.position = pos
-		add_child(particle)
-		
-		var angle = (PI * 2 / 12) * i
-		var target = pos + Vector2(cos(angle), sin(angle)) * 40
-		
-		var tween = create_tween()
-		tween.tween_property(particle, "position", target, 0.5).set_ease(Tween.EASE_OUT)
-		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.5)
-		tween.tween_callback(particle.queue_free)
+# --- NEW GAME FLOW ---
+
+func _on_next_round_pressed():
+	# Keep board, refill draws
+	Global.start_new_round_logic(true) # true = keep board
+	AudioManager.play("draw") # reusing sound
+	show_message("Draws Refilled! Combo continues...", Color.GREEN)
+	update_ui()
 
 func _on_score_button_pressed():
 	if is_animating: return
+	is_animating = true
+	
+	# Disable UI while scoring
+	draw_button.disabled = true
+	bench_button.disabled = true
+	score_button.disabled = true
+	
+	# Hide the static label text initially so the counter can start from 0
+	score_label.text = "SCORE: 0"
 	
 	var result = Global.calculate_score()
 	
-	# Update Global Game State
-	Global.current_score = result.total_score
-	Global.coins += result.coins_earned
-	Global.obols += result.obols_earned # New Currency!
+	# Run the visual sequence
+	await score_manager.run_score_sequence(result, cells)
 	
-	AudioManager.play("win")
-	show_score_result(result)
+	# Apply actual data AFTER the show
+	Global.current_score += result.total_score
+	Global.coins += result.coins_earned
+	Global.obols += result.obols_earned
+	
+	# Show the summary modal
+	show_nice_score_screen(result)
+
+func show_nice_score_screen(result: Dictionary):
+	# Create Modal Overlay
+	score_modal = Panel.new()
+	score_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.85)
+	score_modal.add_theme_stylebox_override("panel", style)
+	add_child(score_modal)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	score_modal.add_child(center)
+	
+	var vbox = VBoxContainer.new()
+	vbox.custom_minimum_size = Vector2(500, 300)
+	vbox.add_theme_constant_override("separation", 20)
+	center.add_child(vbox)
+	
+	# Header Animation
+	var header = Label.new()
+	header.text = "ROUND COMPLETE"
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header.add_theme_font_override("font", CUSTOM_FONT)
+	header.add_theme_font_size_override("font_size", 64)
+	header.add_theme_color_override("font_color", Color.GOLD)
+	header.pivot_offset = Vector2(250, 32)
+	vbox.add_child(header)
+	
+	# Pulse header
+	var t = create_tween().set_loops()
+	t.tween_property(header, "scale", Vector2(1.05, 1.05), 1.0).set_trans(Tween.TRANS_SINE)
+	t.tween_property(header, "scale", Vector2(1.0, 1.0), 1.0).set_trans(Tween.TRANS_SINE)
+	
+	# Big Final Score
+	var score_txt = Label.new()
+	score_txt.text = str(result.total_score)
+	score_txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	score_txt.add_theme_font_override("font", CUSTOM_FONT)
+	score_txt.add_theme_font_size_override("font_size", 96)
+	score_txt.add_theme_color_override("font_color", Color.WHITE)
+	vbox.add_child(score_txt)
+	
+	# Stats
+	var details = Label.new()
+	details.text = "Perfect Matches: %d  |  Line Bonuses: %d" % [result.perfect_matches, result.perfect_lines]
+	details.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(details)
+	
+	# Earnings
+	var rewards = Label.new()
+	rewards.text = "+%d Coins   +%d Obols" % [result.coins_earned, result.obols_earned]
+	rewards.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rewards.add_theme_color_override("font_color", Color.GREEN_YELLOW)
+	rewards.add_theme_font_size_override("font_size", 24)
+	vbox.add_child(rewards)
+	
+	# Continue Button
+	var btn = Button.new()
+	btn.text = "CONTINUE"
+	btn.custom_minimum_size = Vector2(0, 60)
+	btn.add_theme_font_override("font", CUSTOM_FONT)
+	btn.add_theme_font_size_override("font_size", 32)
+	btn.pressed.connect(_on_score_confirmed)
+	vbox.add_child(btn)
+	
+	# Button appears with a delay
+	btn.modulate.a = 0
+	create_tween().tween_property(btn, "modulate:a", 1.0, 0.5).set_delay(0.5)
+
+func _on_score_confirmed():
+	score_modal.queue_free()
+	is_animating = false
+	
+	# WIPE BOARD after scoring (as requested)
+	Global.clear_board()
+	refresh_grid_visuals()
 	
 	if Global.current_score >= Global.opponent_target:
-		# Check for Early Win (Essence)
-		if Global.current_round < 3:
-			var bonus_essence = (3 - Global.current_round) * 10
-			Global.essence += bonus_essence
-			show_message("🏆 Early Win! +" + str(bonus_essence) + " Essence", Color("#aa88ff"))
-		
-		advance_round()
-	else:
-		if Global.current_round >= 3:
-			show_message("💀 Lost Encounter!", Color("#ff5555"))
-			await get_tree().create_timer(2.0).timeout
-			get_tree().reload_current_scene()
-		else:
-			show_message("Try again next round!", Color("#ffaa55"))
-			advance_round()
-
-func show_score_result(result: Dictionary):
-	var popup = AcceptDialog.new()
-	popup.title = "Round Score"
-	
-	var result_text = "═══════════════════\n"
-	result_text += "   SCORE: %d\n" % result.total_score
-	result_text += "   TARGET: %d\n" % Global.opponent_target
-	result_text += "═══════════════════\n\n"
-	result_text += "Matches: %d (+%d Coins)\n" % [result.perfect_matches, result.coins_earned]
-	result_text += "Lines: %d (+%d Obols)\n" % [result.perfect_lines, result.obols_earned]
-	
-	if result.perfect_lines > 0:
-		result_text += "  (Line Bonus Active!)\n\n"
-	
-	popup.dialog_text = result_text
-	
-	if result.line_details.size() > 0:
-		result_text += "LINE BONUSES:\n"
-		for detail in result.line_details:
-			result_text += "  %s: x%d = +%d\n" % [detail.type, detail.multiplier, detail.bonus]
-		result_text += "\n"
-	
-	result_text += "═══════════════════\n"
-	result_text += "Total Earned: %d coins" % result.coins_earned
-	
-	popup.dialog_text = result_text
-	popup.size = Vector2(500, 450)
-	
-	add_child(popup)
-	popup.popup_centered()
-	popup.confirmed.connect(func(): popup.queue_free())
-
-func show_message(text: String, color: Color = Color.WHITE):
-	var label = Label.new()
-	label.text = text
-	label.position = Vector2(450, 35)
-	label.add_theme_font_size_override("font_size", 26)
-	label.add_theme_color_override("font_color", color)
-	label.add_theme_constant_override("outline_size", 3)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	add_child(label)
-	
-	var tween = create_tween()
-	tween.tween_property(label, "position:y", 15, 0.3).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(label, "scale", Vector2(1.2, 1.2), 0.2)
-	tween.tween_property(label, "scale", Vector2(1.0, 1.0), 0.2)
-	tween.tween_property(label, "modulate:a", 0.0, 1.0).set_delay(1.5)
-	tween.tween_callback(label.queue_free)
-
-func advance_round():
-	Global.current_round += 1
-	if Global.current_round > 3:
-		show_message("✨ Encounter Complete! ✨", Color("#ffaa00"))
-		await get_tree().create_timer(2.0).timeout
+		# Win encounter
+		show_message("ENCOUNTER COMPLETE!", Color.GOLD)
+		await get_tree().create_timer(1.5).timeout
 		Global.start_new_encounter()
 		get_tree().reload_current_scene()
+	elif Global.current_round >= 3:
+		# Lost game
+		show_message("GAME OVER", Color.RED)
+		await get_tree().create_timer(1.5).timeout
+		get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
 	else:
-		Global.start_new_round()
-		must_place_or_bench = false
+		# Just next round
+		Global.start_new_round_logic(false) # false = board already cleared
 		update_ui()
+
+# --- DECK VIEWER ---
+func _show_deck():
+	var grid = deck_popup.get_node("DeckGrid/DeckGrid") # Path might need adjustment depending on how nodes nested
+	# Actually I named the grid "DeckGrid" inside scroll inside popup
+	var actual_grid = deck_popup.get_child(0).get_child(0)
+	
+	for c in actual_grid.get_children(): c.queue_free()
+	
+	var sorted_deck = Global.deck.duplicate()
+	sorted_deck.sort_custom(func(a,b): 
+		if a.letter != b.letter: return a.letter < b.letter
+		return a.number < b.number
+	)
+	
+	for slab in sorted_deck:
+		var visual = SlabBuilder.create_visual(slab, 0.5)
+		actual_grid.add_child(visual)
+		
+	deck_popup.popup_centered()
+
+# --- VISUAL FX ---
+func show_message(text: String, color: Color):
+	var label = Label.new()
+	label.text = text
+	label.position = Vector2(450, 50)
+	label.add_theme_font_size_override("font_size", 32)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_constant_override("outline_size", 4)
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	add_child(label)
+	var tween = create_tween()
+	tween.tween_property(label, "position:y", 20, 0.5).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "modulate:a", 0.0, 0.5).set_delay(1.0)
+	tween.tween_callback(label.queue_free)
+
+func create_particle_burst(pos):
+	for i in range(10):
+		var p = ColorRect.new()
+		p.size = Vector2(5,5)
+		p.color = Color.GOLD
+		p.position = pos
+		add_child(p)
+		var dest = pos + Vector2(randf_range(-50,50), randf_range(-50,50))
+		var tween = create_tween()
+		tween.tween_property(p, "position", dest, 0.4)
+		tween.parallel().tween_property(p, "modulate:a", 0, 0.4)
+		tween.tween_callback(p.queue_free)

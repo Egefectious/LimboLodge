@@ -2,7 +2,8 @@ class_name SlabBuilder extends Object
 
 const CUSTOM_FONT = preload("res://Assets/Fonts/Creepster-Regular.ttf")
 
-static func create_visual(slab_data: Dictionary, scale_factor: float = 1.0) -> Control:
+# CHANGED: Type hint is now 'SlabData', not 'Dictionary'
+static func create_visual(slab_data: SlabData, scale_factor: float = 1.0) -> Control:
 	var base_w = 120.0 * scale_factor
 	var base_h = 100.0 * scale_factor
 	
@@ -20,8 +21,9 @@ static func create_visual(slab_data: Dictionary, scale_factor: float = 1.0) -> C
 	}
 	
 	var style = StyleBoxFlat.new()
-	# USE .get() FOR SAFETY
-	var letter = slab_data.letter
+	
+	# CHANGED: Access properties directly from the object
+	var letter = slab_data.letter 
 	style.bg_color = color_map.get(letter, Color.WHITE)
 	
 	style.border_color = Color("#ffffff")
@@ -45,7 +47,8 @@ static func create_visual(slab_data: Dictionary, scale_factor: float = 1.0) -> C
 	letter_label.add_theme_color_override("font_color", Color("#1a1520"))
 	
 	var number_label = Label.new()
-	# USE .get() FOR SAFETY
+	
+	# CHANGED: Access properties directly from the object
 	number_label.text = str(slab_data.number)
 	number_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	number_label.add_theme_font_override("font", CUSTOM_FONT)

@@ -2,6 +2,7 @@ extends Node
 
 var music_player: AudioStreamPlayer
 var sounds: Dictionary = {}
+var current_pitch = 1.0
 
 func _ready():
 	# 1. Setup Music Player (Keep this persistent)
@@ -24,22 +25,24 @@ func _load_sound(key: String, path: String):
 		sounds[key] = load(path)
 	else:
 		print("Warning: Sound missing at ", path)
+		
+func reset_pitch():
+	current_pitch = 1.0
+	
+func play_sequential(key: String, increment: float = 0.05, max_pitch: float = 2.5):
+	play(key, Vector2(current_pitch, current_pitch))
+	current_pitch = min(current_pitch + increment, max_pitch)
 
-# REPLACED FUNCTION: Creates a temporary player for every sound
 func play(key: String, pitch_range: Vector2 = Vector2(1.0, 1.0)):
 	if sounds.has(key):
-		var temp_player = AudioStreamPlayer.new()
-		temp_player.stream = sounds[key]
-		temp_player.bus = "Master"
-		temp_player.pitch_scale = randf_range(pitch_range.x, pitch_range.y)
-		
-		# Clean up the player when the sound finishes
-		temp_player.finished.connect(temp_player.queue_free)
-		
-		add_child(temp_player)
-		temp_player.play()
-	else:
-		print("AudioManager Error: Sound not found - ", key)
+		# Create a temporary player for polyphony (overlapping sounds)
+		var p = AudioStreamPlayer.new()
+		p.stream = sounds[key]
+		p.bus = "Master"
+		p.pitch_scale = randf_range(pitch_range.x, pitch_range.y)
+		p.finished.connect(p.queue_free)
+		add_child(p)
+		p.play()
 
 func play_music(path: String):
 	if FileAccess.file_exists(path):
