@@ -1,3 +1,8 @@
-[gd_scene format=3 uid="uid://bgmwwsusixsxd"]
+[gd_scene load_steps=2 format=3 uid="uid://bgmwwsusixsxd"]
 
-[node name="Shop" type="Node"]
+[ext_resource type="Script" uid="uid://cwp2l8fu5arvc" path="res://Scenes/shop.gd" id="1_a0mxf"]
+
+[node name="Shop" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_a0mxf")

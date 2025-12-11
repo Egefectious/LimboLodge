@@ -47,19 +47,16 @@ func create_starting_deck():
 func generate_grid_numbers():
 	grid_numbers.clear()
 	
-	var number_pool = []
-	for i in range(1, 16):
-		number_pool.append(i)
-	
-	number_pool.shuffle()
-	
-	for i in range(15):
-		grid_numbers.append(number_pool[i])
-	
-	for i in range(10):
-		grid_numbers.append(randi_range(1, 15))
-	
-	grid_numbers.shuffle()
+	# Generate 5 rows, each with unique numbers 1-15
+	for row in range(5):
+		var row_numbers = []
+		for i in range(1, 16):
+			row_numbers.append(i)
+		row_numbers.shuffle()
+		
+		# Take first 5 numbers from shuffled pool for this row
+		for col in range(5):
+			grid_numbers.append(row_numbers[col])
 
 func draw_slab() -> Dictionary:
 	if deck.is_empty():

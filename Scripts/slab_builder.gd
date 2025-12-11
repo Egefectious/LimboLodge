@@ -20,7 +20,10 @@ static func create_visual(slab_data: Dictionary, scale_factor: float = 1.0) -> C
 	}
 	
 	var style = StyleBoxFlat.new()
-	style.bg_color = color_map.get(slab_data.letter, Color.WHITE)
+	# USE .get() FOR SAFETY
+	var letter = slab_data.get("letter", "L") 
+	style.bg_color = color_map.get(letter, Color.WHITE)
+	
 	style.border_color = Color("#ffffff")
 	style.set_border_width_all(int(5 * scale_factor))
 	style.set_corner_radius_all(int(12 * scale_factor))
@@ -35,14 +38,15 @@ static func create_visual(slab_data: Dictionary, scale_factor: float = 1.0) -> C
 	vbox.add_theme_constant_override("separation", int(-5 * scale_factor))
 	
 	var letter_label = Label.new()
-	letter_label.text = slab_data.letter
+	letter_label.text = str(letter)
 	letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	letter_label.add_theme_font_override("font", CUSTOM_FONT)
 	letter_label.add_theme_font_size_override("font_size", int(52 * scale_factor))
 	letter_label.add_theme_color_override("font_color", Color("#1a1520"))
 	
 	var number_label = Label.new()
-	number_label.text = str(slab_data.number)
+	# USE .get() FOR SAFETY
+	number_label.text = str(slab_data.get("number", "?"))
 	number_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	number_label.add_theme_font_override("font", CUSTOM_FONT)
 	number_label.add_theme_font_size_override("font_size", int(32 * scale_factor))

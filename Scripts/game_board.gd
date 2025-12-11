@@ -16,11 +16,17 @@ extends Control
 var cells: Array = []
 var current_slab: Dictionary = {}
 var must_place_or_bench: bool = false
+var audio: AudioManager
+var is_animating: bool = false
 
 const GRID_CELL = preload("res://Scenes/grid_cell.tscn")
 const CUSTOM_FONT = preload("res://Assets/Fonts/Creepster-Regular.ttf")
 
 func _ready():
+	# Initialize audio
+	audio = AudioManager.new()
+	add_child(audio)
+	
 	animate_limbo_letters()
 	setup_grid()
 	update_ui()
@@ -218,6 +224,7 @@ func _on_draw_button_pressed():
 	if Global.draws_remaining > 0 and (current_slab.is_empty() or not must_place_or_bench):
 		current_slab = Global.draw_slab()
 		must_place_or_bench = true
+		audio.play("draw")
 		update_ui()
 		
 		var tween = create_tween()
@@ -227,10 +234,12 @@ func _on_draw_button_pressed():
 func _on_bench_button_pressed():
 	if not current_slab.is_empty() and must_place_or_bench:
 		if Global.benched_slabs.size() >= Global.max_bench_slots:
+			audio.play("error")
 			show_message("Bench is full! (5 max)", Color("#ff8888"))
 			return
 		
 		Global.benched_slabs.append(current_slab)
+		audio.play("slide")
 		show_message("Slab benched", Color("#88aaff"))
 		current_slab = {}
 		must_place_or_bench = false
@@ -238,25 +247,30 @@ func _on_bench_button_pressed():
 
 func _on_benched_slab_clicked(index: int):
 	if not current_slab.is_empty():
+		audio.play("error")
 		show_message("Place or bench current slab first!", Color("#ff8888"))
 		return
 	
 	current_slab = Global.benched_slabs[index]
 	Global.benched_slabs.remove_at(index)
 	must_place_or_bench = true
+	audio.play("slide")
 	show_message("Retrieved from bench", Color("#88aaff"))
 	update_ui()
 
 func _on_cell_clicked(cell_index: int):
 	if current_slab.is_empty():
+		audio.play("error")
 		show_message("Draw a slab first!", Color("#ff8888"))
 		return
 	
 	if not must_place_or_bench:
+		audio.play("error")
 		show_message("Draw a new slab first!", Color("#ff8888"))
 		return
 	
 	if Global.placed_slabs[cell_index] != null:
+		audio.play("error")
 		show_message("Cell already occupied!", Color("#ff8888"))
 		return
 	
@@ -269,11 +283,14 @@ func _on_cell_clicked(cell_index: int):
 	var is_letter_correct = (current_slab.letter == expected_letter)
 	
 	if is_perfect:
+		audio.play("place", Vector2(1.1, 1.3))
 		show_message("✨ Perfect! +" + str(current_slab.number + 25) + " pts", Color("#ffff00"))
 		create_particle_burst(cells[cell_index].global_position + Vector2(37, 37))
 	elif is_letter_correct:
+		audio.play("place", Vector2(1.0, 1.2))
 		show_message("Letter Match! +" + str(current_slab.number + 10) + " pts", Color("#88ff88"))
 	else:
+		audio.play("place")
 		show_message("+" + str(current_slab.number) + " pts", Color("#ffffff"))
 	
 	current_slab = {}
@@ -297,17 +314,25 @@ func create_particle_burst(pos: Vector2):
 		tween.tween_callback(particle.queue_free)
 
 func _on_score_button_pressed():
-	var result = Global.calculate_score()
-	Global.current_score = result.total
-	Global.total_coins += result.total
+	if is_animating: return
 	
+	var result = Global.calculate_score()
+	
+	# Update Global Game State
+	Global.current_score = result.total_score
+	Global.coins += result.coins_earned
+	Global.obols += result.obols_earned # New Currency!
+	
+	audio.play("win")
 	show_score_result(result)
 	
 	if Global.current_score >= Global.opponent_target:
+		# Check for Early Win (Essence)
 		if Global.current_round < 3:
 			var bonus_essence = (3 - Global.current_round) * 10
 			Global.essence += bonus_essence
-			show_message("🏆 Won Round! +" + str(bonus_essence) + " Essence", Color("#88ff88"))
+			show_message("🏆 Early Win! +" + str(bonus_essence) + " Essence", Color("#aa88ff"))
+		
 		advance_round()
 	else:
 		if Global.current_round >= 3:
@@ -323,12 +348,16 @@ func show_score_result(result: Dictionary):
 	popup.title = "Round Score"
 	
 	var result_text = "═══════════════════\n"
-	result_text += "   TOTAL SCORE: %d\n" % result.total
+	result_text += "   SCORE: %d\n" % result.total_score
 	result_text += "   TARGET: %d\n" % Global.opponent_target
 	result_text += "═══════════════════\n\n"
-	result_text += "Base Score: %d\n" % result.base_score
-	result_text += "Perfect Matches: %d\n" % result.perfect_count
-	result_text += "Letter Matches: %d\n\n" % result.letter_correct_count
+	result_text += "Matches: %d (+%d Coins)\n" % [result.perfect_matches, result.coins_earned]
+	result_text += "Lines: %d (+%d Obols)\n" % [result.perfect_lines, result.obols_earned]
+	
+	if result.perfect_lines > 0:
+		result_text += "  (Line Bonus Active!)\n\n"
+	
+	popup.dialog_text = result_text
 	
 	if result.line_details.size() > 0:
 		result_text += "LINE BONUSES:\n"
