@@ -162,13 +162,14 @@ func _flash_cell(cell, color):
 		t.tween_property(bg, "modulate", color, 0.1)
 		t.tween_property(bg, "modulate", Color.WHITE, 0.2)
 
+# FIX: Changed from "Horizontal/Vertical" to "Row/Col" to match Global.gd
 func _get_indices_from_name(name: String) -> Array:
 	var indices = []
-	if name.begins_with("Horizontal"): # Changed from Row to match Global.gd
-		var r = int(name.split(" ")[2]) - 1
+	if name.begins_with("Row"):  # FIXED: was "Horizontal"
+		var r = int(name.split(" ")[1]) - 1
 		for c in range(5): indices.append(r * 5 + c)
-	elif name.begins_with("Vertical"):
-		var c = int(name.split(" ")[2]) - 1
+	elif name.begins_with("Col"):  # FIXED: was "Vertical"
+		var c = int(name.split(" ")[1]) - 1
 		for r in range(5): indices.append(r * 5 + c)
 	elif "Diagonal \\" in name: indices = [0, 6, 12, 18, 24]
 	elif "Diagonal /" in name: indices = [4, 8, 12, 16, 20]
