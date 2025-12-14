@@ -10,6 +10,7 @@ var placed_slab: SlabData = null
 var is_hovered: bool = false
 var current_panel_style: StyleBoxFlat = null 
 var current_panel_node: Panel = null
+var original_y: float = 0.0
 
 @onready var background = $Background
 @onready var grid_number_label = $GridNumber
@@ -23,7 +24,9 @@ func _ready():
 	gui_input.connect(_on_gui_input)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
+	original_y = position.y
 	update_display()
+	
 
 func setup(idx: int, num: int, ltr: String):
 	cell_index = idx
@@ -176,12 +179,30 @@ func _on_gui_input(event: InputEvent):
 
 func _on_mouse_entered():
 	is_hovered = true
-	if background and placed_slab == null:
+	if placed_slab == null: # Only pop if empty (optional preference)
 		var tween = create_tween()
-		tween.tween_property(background, "modulate", Color(1.2, 1.2, 1.2), 0.1)
+		tween.set_parallel(true)
+		# Move UP by 3 pixels from wherever it thinks it should be
+		tween.tween_property(self, "position:y", original_y - 3, 0.1)
+		tween.tween_property(self, "scale", Vector2(1.05, 1.05), 0.1)
+		
+		# Glow Effect (if background exists)
+		if background:
+			var style = background.get_theme_stylebox("panel")
+			# Create a unique copy so we don't change ALL cells
+			if style:
+				var new_style = style.duplicate()
+				new_style.border_color = Color("#6a1b9a") # Purple Glow
+				background.add_theme_stylebox_override("panel", new_style)
 
 func _on_mouse_exited():
 	is_hovered = false
+	var tween = create_tween()
+	tween.set_parallel(true)
+	# Return to original Y
+	tween.tween_property(self, "position:y", original_y, 0.1)
+	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.1)
+	
+	# Remove Glow
 	if background:
-		var tween = create_tween()
-		tween.tween_property(background, "modulate", Color(1, 1, 1), 0.1)
+		background.remove_theme_stylebox_override("panel")

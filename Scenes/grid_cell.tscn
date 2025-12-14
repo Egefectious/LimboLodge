@@ -4,12 +4,12 @@
 [ext_resource type="FontFile" uid="uid://nqpk7yn1abs4" path="res://Assets/Fonts/Creepster-Regular.ttf" id="2_vqexn"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a7rwb"]
-bg_color = Color(0.16470589, 0.12156863, 0.101960786, 1)
-border_width_left = 5
-border_width_top = 5
-border_width_right = 5
-border_width_bottom = 5
-border_color = Color(0.0046587484, 0.003360812, 0.0015346898, 1)
+bg_color = Color(0.078431375, 0.039215688, 0.13725491, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.23921569, 0.1254902, 0.34509805, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -22,6 +22,9 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("1_a7rwb")
+cell_index = null
+grid_number = null
+letter = null
 
 [node name="Background" type="Panel" parent="."]
 layout_mode = 1

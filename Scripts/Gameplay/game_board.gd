@@ -13,6 +13,7 @@ extends Control
 @onready var bench_button = $RightPanel/HBoxContainer/BenchButton
 @onready var score_button = $RightPanel/HBoxContainer/ScoreButton
 @onready var bench_display = $CenterPanel/BenchPanel/BenchContainer
+@onready var artifact_grid = $RightPanel/ArtifactsPanel/VBoxContainer/ArtifactGrid
 
 # === STATE ===
 var cells: Array = []
@@ -105,16 +106,48 @@ func _create_view_deck_button():
 	add_child(view_deck_btn)
 
 func animate_limbo_letters():
-	for i in range(limbo_letters.get_child_count()):
-		var panel = limbo_letters.get_child(i)
-		var label = panel.get_node("Label")
-		var start_y = label.position.y
+	# Colors mapped by index 0-4 (L, I, M, B, O)
+	var border_colors = [
+		Color("#ff5555"), # L
+		Color("#ff9955"), # I
+		Color("#ffff55"), # M
+		Color("#55ff55"), # B
+		Color("#aa55ff")  # O
+	]
+	
+	var letters_container = $LimboLetters
+	
+	for i in range(letters_container.get_child_count()):
+		var panel = letters_container.get_child(i)
 		
+		# --- 1. APPLY HTML STYLE ---
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.1, 0.05, 0.15, 0.9) # Dark Purple card bg
+		style.border_color = border_colors[i]       # Unique Color per letter
+		style.set_border_width_all(3)
+		style.set_corner_radius_all(6)
+	  
+		# Add that subtle inner glow from HTML using shadow properties
+		style.shadow_color = border_colors[i]
+		style.shadow_size = 2 # Subtle glow
+	   
+		panel.add_theme_stylebox_override("panel", style)
+	   
+		# Style the Label inside
+		var label = panel.get_node("Label")
+		label.add_theme_color_override("font_color", border_colors[i])
+		
+		# --- 2. APPLY ANIMATION (Floating Sine Wave) ---
+		var start_y = panel.position.y # Use panel position, not label
+		
+		# We animate the panel itself, not just the label inside
 		var tween = create_tween()
 		tween.set_loops()
-		tween.tween_property(label, "position:y", start_y - 4, 1.0 + i * 0.2).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(label, "position:y", start_y + 4, 1.0 + i * 0.2).set_trans(Tween.TRANS_SINE)
-
+		
+		# Float Up
+		tween.tween_property(panel, "position:y", start_y - 6, 1.5).set_trans(Tween.TRANS_SINE).set_delay(i * 0.1)
+		# Float Down
+		tween.tween_property(panel, "position:y", start_y + 0, 1.5).set_trans(Tween.TRANS_SINE)
 # === GRID SETUP ===
 
 func setup_grid():
@@ -144,6 +177,7 @@ func update_ui():
 	_update_current_slab_display()
 	_update_bench_display()
 	_update_button_states()
+	_update_artifacts_display()
 
 func _update_labels():
 	score_label.text = "\n Score: " + str(Global.current_score)
@@ -454,3 +488,41 @@ func _show_deck():
 		var visual = SlabBuilder.create_visual(slab, 0.5)
 		actual_grid.add_child(visual)
 	deck_popup.popup_centered()
+
+func _update_artifacts_display():
+	# 1. Clear old icons
+	for child in artifact_grid.get_children():
+		child.queue_free()
+	
+	# 2. Add current artifacts from Global
+	for artifact_id in Global.active_artifacts:
+		var slot = Panel.new()
+		slot.custom_minimum_size = Vector2(50, 50)
+		
+		# Style matches HTML .artifact-slot
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0, 0, 0, 0.5)
+		style.border_color = Color("#3d2058")
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(6)
+		slot.add_theme_stylebox_override("panel", style)
+		
+		# Add Icon/Label
+		var label = Label.new()
+		label.text = _get_artifact_icon(artifact_id) # Helper to get emoji/texture
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.set_anchors_preset(Control.PRESET_FULL_RECT)
+		label.add_theme_font_size_override("font_size", 24)
+		
+		slot.add_child(label)
+		artifact_grid.add_child(slot)
+
+# Simple helper to map IDs to the emojis seen in your HTML
+func _get_artifact_icon(id: String) -> String:
+		match id:
+			"infinite_reuse": return "🔮"
+			"eternal_slab": return "⚱️"
+			"bonus_five": return "✨"
+			"coin_rush": return "💰"
+			_: return "📦"
