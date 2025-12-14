@@ -22,9 +22,6 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("1_a7rwb")
-cell_index = null
-grid_number = null
-letter = null
 
 [node name="Background" type="Panel" parent="."]
 layout_mode = 1
@@ -79,3 +76,4 @@ offset_right = 3.0
 offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2

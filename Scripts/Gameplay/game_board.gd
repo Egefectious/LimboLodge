@@ -1,20 +1,28 @@
 extends Control
 
 # === NODE REFERENCES ===
-@onready var grid_container = $GridContainer
-@onready var limbo_letters = $LimboLetters
-@onready var current_slab_display = $RightPanel/CurrentSlabPanel/SlabDisplay
-@onready var score_label = $RightPanel/StatsPanel/VBoxContainer/ScoreLabel
-@onready var target_label = $RightPanel/StatsPanel/VBoxContainer/TargetLabel
-@onready var draws_label = $RightPanel/StatsPanel/VBoxContainer/DrawsLabel
-@onready var round_label = $RightPanel/StatsPanel/VBoxContainer/RoundLabel
-@onready var encounter_label = $RightPanel/StatsPanel/VBoxContainer/EncounterLabel
-@onready var draw_button = $RightPanel/HBoxContainer/DrawButton
-@onready var bench_button = $RightPanel/HBoxContainer/BenchButton
-@onready var score_button = $RightPanel/HBoxContainer/ScoreButton
-@onready var bench_display = $CenterPanel/BenchPanel/BenchContainer
-@onready var artifact_grid = $RightPanel/ArtifactsPanel/VBoxContainer/ArtifactGrid
+# UPDATED PATHS TO MATCH YOUR NEW SCENE STRUCTURE
+@onready var grid_container = $MainLayout/CenterArea/GridPanel/GridContainer
+@onready var limbo_letters = $MainLayout/LeftSidebar/LimboLetters
 
+# Right Sidebar Paths
+@onready var current_slab_display = $RightSidebar/CurrentSlabPanel/SlabDisplay
+@onready var score_label = $RightSidebar/StatsPanel/VBoxContainer/ScoreLabel
+@onready var target_label = $RightSidebar/StatsPanel/VBoxContainer/TargetLabel
+@onready var draws_label = $RightSidebar/StatsPanel/VBoxContainer/DrawsLabel
+@onready var round_label = $RightSidebar/StatsPanel/VBoxContainer/RoundLabel
+@onready var encounter_label = $RightSidebar/StatsPanel/VBoxContainer/EncounterLabel
+
+# Buttons
+@onready var draw_button = $RightSidebar/HBoxContainer/DrawButton
+@onready var bench_button = $RightSidebar/HBoxContainer/BenchButton
+@onready var score_button = $RightSidebar/HBoxContainer/ScoreButton
+
+# Bench (Now inside CallerPanel)
+@onready var bench_display = $MainLayout/CenterArea/CallerPanel/BenchPanel/BenchContainer
+
+# Artifacts (Note: You named the panel "ArtifactPanel" singular in scene, but "VBox" inside it)
+@onready var artifact_grid = $RightSidebar/ArtifactPanel/VBox/ArtifactGrid
 # === STATE ===
 var cells: Array = []
 var current_slab: SlabData = null
@@ -115,7 +123,7 @@ func animate_limbo_letters():
 		Color("#aa55ff")  # O
 	]
 	
-	var letters_container = $LimboLetters
+	var letters_container = $MainLayout/LeftSidebar/LimboLetters
 	
 	for i in range(letters_container.get_child_count()):
 		var panel = letters_container.get_child(i)
