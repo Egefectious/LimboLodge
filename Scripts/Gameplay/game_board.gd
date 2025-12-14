@@ -175,7 +175,7 @@ func _update_button_states():
 		score_button.text = "FINISH!"
 		score_button.modulate = Color(1, 0.5, 0.5)
 
-func update_current_slab_display():
+func _update_current_slab_display():
 	for child in current_slab_display.get_children(): 
 		child.queue_free()
 	
@@ -191,7 +191,7 @@ func update_current_slab_display():
 		var visual = SlabBuilder.create_visual(current_slab, 1.2)
 		current_slab_display.add_child(visual)
 
-func update_bench_display():
+func _update_bench_display():
 	for child in bench_display.get_children(): 
 		child.queue_free()
 	
@@ -360,7 +360,7 @@ func _add_score_total(vbox: VBoxContainer, result: Dictionary):
 
 func _add_score_details(vbox: VBoxContainer, result: Dictionary):
 	var details = Label.new()
-	details.text = "Perfect Matches: %d  |  Line Bonuses: %d" % [result.perfect_matches, result.perfect_lines]
+	details.text = "Perfect Matches: %d  | Line Bonuses: %d" % [result.perfect_matches, result.perfect_lines]
 	details.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(details)
 
@@ -384,6 +384,8 @@ func _add_continue_button(vbox: VBoxContainer):
 	btn.modulate.a = 0
 	create_tween().tween_property(btn, "modulate:a", 1.0, 0.5).set_delay(0.5)
 
+# === GAME END LOGIC ===
+
 func _on_score_confirmed():
 	score_modal.queue_free()
 	is_animating = false
@@ -394,8 +396,12 @@ func _on_score_confirmed():
 	if Global.current_score >= Global.opponent_target:
 		show_message("ENCOUNTER COMPLETE!", Color.GOLD)
 		await get_tree().create_timer(1.5).timeout
-		Global.start_new_encounter()
-		get_tree().reload_current_scene()
+		
+		# CHANGE: Go to Shop instead of reloading game directly!
+		# We do NOT call Global.start_new_encounter() yet, 
+		# we let the Shop handle that transition.
+		get_tree().change_scene_to_file("res://Scenes/shop.tscn")
+		
 	elif Global.current_round >= 3:
 		show_message("GAME OVER", Color.RED)
 		await get_tree().create_timer(1.5).timeout
@@ -403,26 +409,6 @@ func _on_score_confirmed():
 	else:
 		Global.start_new_round_logic(false)
 		update_ui()
-
-# === DECK VIEWER ===
-
-func _show_deck():
-	var actual_grid = deck_popup.get_child(0).get_child(0)
-	
-	for c in actual_grid.get_children(): 
-		c.queue_free()
-	
-	var sorted_deck = Global.deck.duplicate()
-	sorted_deck.sort_custom(func(a, b): 
-		if a.letter != b.letter: return a.letter < b.letter
-		return a.number < b.number
-	)
-	
-	for slab in sorted_deck:
-		var visual = SlabBuilder.create_visual(slab, 0.5)
-		actual_grid.add_child(visual)
-	
-	deck_popup.popup_centered()
 
 # === VISUAL EFFECTS ===
 
@@ -454,3 +440,17 @@ func create_particle_burst(pos: Vector2):
 		tween.tween_property(p, "position", dest, 0.4)
 		tween.parallel().tween_property(p, "modulate:a", 0, 0.4)
 		tween.tween_callback(p.queue_free)
+
+# DECK VIEWER
+func _show_deck():
+	var actual_grid = deck_popup.get_child(0).get_child(0)
+	for c in actual_grid.get_children(): c.queue_free()
+	var sorted_deck = Global.deck.duplicate()
+	sorted_deck.sort_custom(func(a, b): 
+		if a.letter != b.letter: return a.letter < b.letter
+		return a.number < b.number
+	)
+	for slab in sorted_deck:
+		var visual = SlabBuilder.create_visual(slab, 0.5)
+		actual_grid.add_child(visual)
+	deck_popup.popup_centered()

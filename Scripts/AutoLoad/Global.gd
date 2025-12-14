@@ -18,7 +18,13 @@ var max_draws: int = 8
 var opponent_target: int = 100
 
 # === DECK & BOARD ===
+# 'deck' is your PERMANENT collection (Master Deck)
 var deck: Array[SlabData] = []
+# 'draw_pile' is the temporary stack you draw from during gameplay
+var draw_pile: Array[SlabData] = []
+# 'discard_pile' holds cards that have been recycled (if we add discard logic later)
+var discard_pile: Array[SlabData] = []
+
 var placed_slabs: Array = [] # Array of SlabData or null (size 25)
 var benched_slabs: Array[SlabData] = []
 var max_bench_slots: int = 5
@@ -27,8 +33,9 @@ var max_bench_slots: int = 5
 var grid_numbers: Array = [] # The random numbers on each grid cell
 
 # === UPGRADES ===
+var active_artifacts: Array[String] = []
 var artifacts: Array = []
-var number_bias: Dictionary = {} # For weighted random number generation
+var number_bias: Dictionary = {}
 
 # === CONSTANTS ===
 const LIMBO_LETTERS := ["L", "I", "M", "B", "O"]
@@ -56,6 +63,9 @@ func reset_game():
 	create_starting_deck()
 	generate_grid_numbers()
 	clear_board()
+	
+	# Initialize the draw pile for the first game
+	reset_draw_pile()
 
 func create_starting_deck():
 	deck.clear()
@@ -63,7 +73,7 @@ func create_starting_deck():
 		for num in range(1, 16):
 			var new_slab = SlabData.new(letter_char, num, "common")
 			deck.append(new_slab)
-	deck.shuffle()
+	# We do NOT shuffle the master deck; we shuffle the draw pile
 
 func generate_grid_numbers():
 	grid_numbers.clear()
@@ -81,13 +91,39 @@ func clear_board():
 
 # === DRAW SYSTEM ===
 
+func reset_draw_pile():
+	# Create a fresh copy of the Master Deck for the new round/encounter
+	draw_pile = deck.duplicate()
+	draw_pile.shuffle()
+	discard_pile.clear()
+	print("Draw Pile Reset. Total Cards: ", draw_pile.size())
+
 func draw_slab() -> SlabData:
-	if deck.is_empty():
-		print("Deck empty! Reshuffling...")
-		create_starting_deck()
+	# If pile is empty, recycle from discard or emergency refill from master
+	if draw_pile.is_empty():
+		if discard_pile.size() > 0:
+			print("Draw pile empty. Reshuffling discard pile...")
+			draw_pile = discard_pile.duplicate()
+			discard_pile.clear()
+			draw_pile.shuffle()
+		else:
+			print("Draw & Discard empty! Emergency refill from Master Deck.")
+			draw_pile = deck.duplicate()
+			draw_pile.shuffle()
 	
+	if draw_pile.is_empty():
+		# This should only happen if the player deleted their whole deck
+		print("CRITICAL: Deck is empty!")
+		return null
+		
 	draws_remaining -= 1
-	return deck.pop_front()
+	var slab = draw_pile.pop_front()
+	
+	# In a future update, when board is cleared, we should add those to 'discard_pile'
+	# For now, we assume drawn cards are effectively 'out' until the round resets
+	discard_pile.append(slab) 
+	
+	return slab
 
 # === ROUND/ENCOUNTER PROGRESSION ===
 
@@ -98,6 +134,8 @@ func start_new_round_logic(keep_board: bool):
 	if not keep_board:
 		clear_board()
 		benched_slabs.clear()
+		# Standard Roguelike Logic: Reshuffle everything at start of round
+		reset_draw_pile() 
 
 func start_new_encounter():
 	current_round = 1
@@ -108,47 +146,70 @@ func start_new_encounter():
 	benched_slabs.clear()
 	generate_grid_numbers()
 	
-	# Scale difficulty
+	# PERSISTENCE RULE: Clear artifacts unless "Infinite Reuse" or "Eternal"
+	var kept_artifacts = []
+	for id in active_artifacts:
+		if id == "infinite_reuse" or id == "eternal_slab":
+			kept_artifacts.append(id)
+			# Only keep one eternal if multiple? Logic says "This slab persists"
+	
+	active_artifacts = kept_artifacts.duplicate()
+	
 	opponent_target = 100 + (current_encounter * 50)
-	draws_remaining = max_draws
+	draws_remaining = draws_remaining # Reset to max
 
-# === SCORING SYSTEM ===
+# === SCORING SYSTEM (Unchanged for now) ===
 
 func calculate_score() -> Dictionary:
-	var single_scores = []
 	var total_score = 0
+	var single_scores = []
 	var perfect_count = 0
+	var placement_count = 0 # For scaling effects
 	
-	# Calculate base scores for each cell
+	# 1. Base Score + Additive Bonuses
 	for i in range(25):
 		if placed_slabs[i] != null:
+			placement_count += 1
 			var slab = placed_slabs[i]
-			var row = i / 5
-			var expected_letter = LIMBO_LETTERS[row]
+			var raw_score = 0
 			
-			var base_score = slab.number
-			var is_letter_correct = (slab.letter == expected_letter)
-			var is_number_correct = (slab.number == grid_numbers[i])
-			var is_perfect = is_letter_correct and is_number_correct
-			
-			if is_perfect:
-				base_score += PERFECT_MATCH_BONUS
+			# Check match type using new logic
+			if is_perfect_match(i):
+				raw_score = 10 + PERFECT_MATCH_BONUS # 10 base + 25
 				perfect_count += 1
-			elif is_letter_correct:
-				base_score += LETTER_MATCH_BONUS
+			elif slab.letter == get_letter_for_row(i / 5): # Basic letter match
+				raw_score = 10 + LETTER_MATCH_BONUS
+			else:
+				# Mismatch
+				raw_score = slab.number
+				# Salvage Effect
+				if has_effect("salvage") and raw_score < 5: raw_score = 5
+				if has_effect("quick_placement") and raw_score < 7: raw_score = 7
+
+			# Apply Additive Bonuses (Bonus Five, Bonus Ten)
+			raw_score += get_stat_sum("additive")
 			
-			single_scores.append(base_score)
-			total_score += base_score
+			# Conditionals
+			if (i % 2 != 0) and has_effect("odd_bonus"): raw_score += 5 # Odd index isn't exactly odd number, check grid_numbers[i] % 2
+			
+			# Scaling (Chain Starter)
+			if has_effect("chain_starter"):
+				raw_score += placement_count # +1 for 1st, +2 for 2nd... (approximate logic)
+
+			single_scores.append(raw_score)
+			total_score += raw_score
 		else:
 			single_scores.append(0)
 	
-	# Calculate line bonuses
+
 	var line_bonuses = calculate_line_bonuses(single_scores)
 	total_score += line_bonuses.total_bonus
 	
-	# Calculate rewards
 	var coins_earned = int(total_score / 10.0)
 	var obols_earned = line_bonuses.details.size()
+	
+	var global_mult = get_multipliers()
+	total_score = total_score * global_mult
 	
 	return {
 		"total_score": total_score,
@@ -163,7 +224,6 @@ func calculate_line_bonuses(single_scores: Array) -> Dictionary:
 	var total_bonus = 0
 	var details = []
 	
-	# Helper function to check if a line is complete and calculate bonus
 	var check_line = func(indices: Array, name: String):
 		var filled = 0
 		var score_sum = 0
@@ -176,9 +236,7 @@ func calculate_line_bonuses(single_scores: Array) -> Dictionary:
 				if is_perfect_match(idx): 
 					perfects += 1
 		
-		# Line must be completely filled
 		if filled == indices.size():
-			# Base multiplier is 2x, +1 for each perfect after the first 2
 			var multiplier = 2 + max(0, perfects - 2)
 			var bonus = score_sum * (multiplier - 1)
 			total_bonus += bonus
@@ -189,49 +247,76 @@ func calculate_line_bonuses(single_scores: Array) -> Dictionary:
 				"perfects": perfects
 			})
 	
-	# Check all rows
 	for r in range(5):
 		var indices = []
-		for c in range(5): 
-			indices.append(r * 5 + c)
+		for c in range(5): indices.append(r * 5 + c)
 		check_line.call(indices, "Row " + str(r + 1))
 	
-	# Check all columns
 	for c in range(5):
 		var indices = []
-		for r in range(5): 
-			indices.append(r * 5 + c)
+		for r in range(5): indices.append(r * 5 + c)
 		check_line.call(indices, "Col " + str(c + 1))
 	
-	# Check diagonals
-	var diagonal_1 = [0, 6, 12, 18, 24]
-	check_line.call(diagonal_1, "Diagonal \\")
-	
-	var diagonal_2 = [4, 8, 12, 16, 20]
-	check_line.call(diagonal_2, "Diagonal /")
+	check_line.call([0, 6, 12, 18, 24], "Diagonal \\")
+	check_line.call([4, 8, 12, 16, 20], "Diagonal /")
 	
 	return {"total_bonus": total_bonus, "details": details}
 
 func is_perfect_match(idx: int) -> bool:
-	if placed_slabs[idx] == null: 
-		return false
-		
+	if placed_slabs[idx] == null: return false
+	
 	var row = idx / 5
 	var expected_letter = LIMBO_LETTERS[row]
 	var slab = placed_slabs[idx]
+	var grid_num = grid_numbers[idx]
 	
-	return slab.letter == expected_letter and slab.number == grid_numbers[idx]
+	# NEW: Wildcards and Rules
+	var letter_match = (slab.letter == expected_letter) or has_effect("wild_letter")
+	
+	# Letter Shift (Adjacent match)
+	if not letter_match and has_effect("adjacent_letters"):
+		var l_idx = LIMBO_LETTERS.find(slab.letter)
+		var t_idx = LIMBO_LETTERS.find(expected_letter)
+		if abs(l_idx - t_idx) <= 1: letter_match = true
 
-# === SHOP SYSTEM ===
+	var num_match = (slab.number == grid_num) or has_effect("wild_number")
+	
+	# Number Flex (+/- 1)
+	if not num_match and has_effect("flex_numbers"):
+		if abs(slab.number - grid_num) <= 1: num_match = true
+		
+	# Lucky Seven
+	if has_effect("perfect_7") and slab.number == 7:
+		return true
+		
+	return letter_match and num_match
+# === SHOP & DECK MANAGEMENT ===
 
-func add_slab_to_deck(slab_data: Dictionary):
-	# Helper to convert dict to SlabData (for shop compatibility)
-	var new_slab = SlabData.new(
-		slab_data.get("letter", "L"), 
-		slab_data.get("number", 1),
-		slab_data.get("rarity", "common")
-	)
+func add_slab_to_deck(slab_data_input):
+	var new_slab: SlabData
+	
+	# Now this check is valid because slab_data_input isn't forced to be a Dictionary
+	if slab_data_input is SlabData:
+		new_slab = slab_data_input
+	else:
+		# Assume it's a Dictionary and create a new SlabData from it
+		new_slab = SlabData.new(
+			slab_data_input.get("letter", "L"), 
+			slab_data_input.get("number", 1),
+			slab_data_input.get("rarity", "common")
+		)
+	
+	# Add to Master Deck
 	deck.append(new_slab)
+	print("Added to Deck: ", new_slab.letter, new_slab.number)
+
+# This function was missing!
+func remove_slab_from_deck(slab: SlabData):
+	if slab in deck:
+		deck.erase(slab)
+		print("Removed from Deck: ", slab.letter, slab.number)
+	else:
+		print("Warning: Tried to remove slab not in deck")
 
 func add_artifact(artifact_id: String):
 	if artifact_id not in artifacts:
@@ -254,10 +339,32 @@ func get_weighted_random_number() -> int:
 			pool.append(i)
 	return pool.pick_random()
 
-# === UTILITY FUNCTIONS ===
+# === UTILITY ===
 
 func get_letter_for_row(row: int) -> String:
 	return LIMBO_LETTERS[row] if row < LIMBO_LETTERS.size() else "L"
 
 func get_row_col(index: int) -> Vector2i:
 	return Vector2i(index % 5, index / 5)
+
+func has_effect(effect_name: String) -> bool:
+	for id in active_artifacts:
+		var def = SlabDefinitions.SLABS.get(id, {})
+		if def.get("effect") == effect_name: return true
+	return false
+
+func get_stat_sum(stat_type: String) -> float:
+	var total = 0.0
+	for id in active_artifacts:
+		var def = SlabDefinitions.SLABS.get(id, {})
+		if def.get("type") == stat_type:
+			total += def.get("val", 0)
+	return total
+
+func get_multipliers() -> float:
+	var mult = 1.0
+	for id in active_artifacts:
+		var def = SlabDefinitions.SLABS.get(id, {})
+		if def.get("type") == "mult":
+			mult *= def.get("val", 1.0)
+	return mult
