@@ -240,7 +240,7 @@ const SLABS = {
 }
 
 # Helper to pick a random slab key by rarity
-static func get_random_id(rarity: String) -> String:
+func get_random_id(rarity: String) -> String:
 	var pool = []
 	for id in SLABS:
 		if SLABS[id].rarity == rarity:

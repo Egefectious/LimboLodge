@@ -1,152 +1,290 @@
-[gd_scene load_steps=17 format=3 uid="uid://cio7dl4ta6v1q"]
+[gd_scene load_steps=23 format=3 uid="uid://cio7dl4ta6v1q"]
 
 [ext_resource type="Script" uid="uid://ce7qpwrpbj7yd" path="res://Scripts/Gameplay/game_board.gd" id="1_pxj3o"]
 [ext_resource type="FontFile" uid="uid://nqpk7yn1abs4" path="res://Assets/Fonts/Creepster-Regular.ttf" id="2_legbf"]
 [ext_resource type="Shader" uid="uid://cr62cj28w8xn1" path="res://Scenes/background.gdshader" id="2_s5vlf"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_nhcq1"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
 shader = ExtResource("2_s5vlf")
 shader_parameter/color_base = Color(0.04, 0.02, 0.07, 1)
 shader_parameter/color_fog_1 = Color(0.42, 0.11, 0.6, 1)
 shader_parameter/color_fog_2 = Color(0.29, 0, 0.51, 1)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_legbf"]
-bg_color = Color(1, 0.33333334, 0.33333334, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="Gradient" id="Gradient_vignette"]
+offsets = PackedFloat32Array(0, 0.4, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0.8)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s5vlf"]
-bg_color = Color(1, 0.6, 0.33333334, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_vignette"]
+gradient = SubResource("Gradient_vignette")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nhcq1"]
-bg_color = Color(1, 1, 0.33333334, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_title"]
+content_margin_left = 25.0
+content_margin_top = 20.0
+content_margin_right = 25.0
+content_margin_bottom = 20.0
+bg_color = Color(0.0901961, 0.0431373, 0.145098, 0.98)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.545098, 0.227451, 0.788235, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.541176, 0.168627, 0.886275, 0.6)
+shadow_size = 25
+shadow_offset = Vector2(0, 8)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0amks"]
-bg_color = Color(0.33333334, 1, 0.33333334, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_caller"]
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.415686, 0.105882, 0.603922, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 18
+shadow_offset = Vector2(0, 6)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kgtnr"]
-bg_color = Color(0.6666667, 0.33333334, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_caller_avatar"]
+bg_color = Color(0.196078, 0.0666667, 0.290196, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.666667, 0.333333, 1, 1)
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+shadow_color = Color(0.666667, 0.333333, 1, 0.8)
+shadow_size = 20
+shadow_offset = Vector2(0, 2)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5lj0w"]
-bg_color = Color(0.11372549, 0.05490196, 0.1764706, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.41568628, 0.105882354, 0.6039216, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grid"]
+content_margin_left = 18.0
+content_margin_top = 18.0
+content_margin_right = 18.0
+content_margin_bottom = 18.0
+bg_color = Color(0.0470588, 0.0235294, 0.0823529, 0.98)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.290196, 0.105882, 0.415686, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.9)
+shadow_size = 30
+shadow_offset = Vector2(0, 10)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_letter_L"]
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.333333, 0.333333, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(1, 0.333333, 0.333333, 0.4)
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_letter_I"]
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.6, 0.333333, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(1, 0.6, 0.333333, 0.4)
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_letter_M"]
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 1, 0.333333, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(1, 1, 0.333333, 0.4)
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_letter_B"]
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.333333, 1, 0.333333, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0.333333, 1, 0.333333, 0.4)
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_letter_O"]
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.666667, 0.333333, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0.666667, 0.333333, 1, 0.4)
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bench"]
+content_margin_left = 15.0
+content_margin_top = 12.0
+content_margin_right = 15.0
+content_margin_bottom = 12.0
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.290196, 0.105882, 0.415686, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slab"]
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.96)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.545098, 0.227451, 0.788235, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0.415686, 0.105882, 0.603922, 0.5)
+shadow_size = 20
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stat_base"]
+content_margin_left = 18.0
+content_margin_top = 15.0
+content_margin_right = 18.0
+content_margin_bottom = 15.0
+bg_color = Color(0.0666667, 0.0313726, 0.105882, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 12
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_artifacts"]
+content_margin_left = 15.0
+content_margin_top = 12.0
+content_margin_right = 15.0
+content_margin_bottom = 12.0
+bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.415686, 0.105882, 0.603922, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_draw"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.137255, 0.27451, 0.0666667, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.247059, 0.490196, 0.117647, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 shadow_size = 10
+shadow_offset = Vector2(0, 4)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3q6lt"]
-bg_color = Color(0.16470589, 0.1254902, 0.1882353, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_bench"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.27451, 0.2, 0.0666667, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.3529412, 0.2901961, 0.41568628, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_optkc"]
-bg_color = Color(0.17064083, 0.060048573, 0.352401, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pxj3o"]
-bg_color = Color(0.101960786, 0.08235294, 0.1254902, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.22745098, 0.18431373, 0.2901961, 1)
+border_color = Color(0.490196, 0.356863, 0.117647, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-shadow_color = Color(0, 0, 0, 0.8352941)
-shadow_size = 8
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f51tk"]
-bg_color = Color(0.16470589, 0.1254902, 0.1882353, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_score"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.231373, 0.0666667, 0.27451, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.3529412, 0.2901961, 0.41568628, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gf42p"]
-bg_color = Color(0.22745098, 0.3529412, 0.22745098, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.3529412, 0.5411765, 0.3529412, 1)
+border_color = Color(0.411765, 0.117647, 0.490196, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d02nu"]
-bg_color = Color(0.29179308, 0.17412353, 0.29212064, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.3529412, 0.22745098, 0.3529412, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
 
 [node name="GameBoard" type="Control"]
 layout_mode = 3
@@ -158,166 +296,97 @@ grow_vertical = 2
 script = ExtResource("1_pxj3o")
 
 [node name="Background" type="ColorRect" parent="."]
-material = SubResource("ShaderMaterial_nhcq1")
+material = SubResource("ShaderMaterial_bg")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.21634656, 0.058329806, 0.24728647, 1)
+color = Color(0.0392157, 0.0235294, 0.0705882, 1)
 
-[node name="MainLayout" type="HBoxContainer" parent="."]
+[node name="Vignette" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_vignette")
 
-[node name="LeftSidebar" type="VBoxContainer" parent="MainLayout"]
+[node name="MainContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="GameLayout" type="HBoxContainer" parent="MainContainer"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
-[node name="LimboLetters" type="VBoxContainer" parent="MainLayout/LeftSidebar"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="LetterL" type="Panel" parent="MainLayout/LeftSidebar/LimboLetters"]
-custom_minimum_size = Vector2(40, 70)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_legbf")
-
-[node name="Label" type="Label" parent="MainLayout/LeftSidebar/LimboLetters/LetterL"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 70.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 32
-text = "L"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="LetterI" type="Panel" parent="MainLayout/LeftSidebar/LimboLetters"]
-custom_minimum_size = Vector2(40, 70)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_s5vlf")
-
-[node name="Label" type="Label" parent="MainLayout/LeftSidebar/LimboLetters/LetterI"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 70.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 32
-text = "I"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="LetterM" type="Panel" parent="MainLayout/LeftSidebar/LimboLetters"]
-custom_minimum_size = Vector2(40, 70)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_nhcq1")
-
-[node name="Label" type="Label" parent="MainLayout/LeftSidebar/LimboLetters/LetterM"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 71.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 32
-text = "M"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="LetterB" type="Panel" parent="MainLayout/LeftSidebar/LimboLetters"]
-custom_minimum_size = Vector2(40, 70)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_0amks")
-
-[node name="Label" type="Label" parent="MainLayout/LeftSidebar/LimboLetters/LetterB"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 69.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 32
-text = "B"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="LetterO" type="Panel" parent="MainLayout/LeftSidebar/LimboLetters"]
-custom_minimum_size = Vector2(40, 70)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_kgtnr")
-
-[node name="Label" type="Label" parent="MainLayout/LeftSidebar/LimboLetters/LetterO"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 67.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 32
-text = "O"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CenterArea" type="VBoxContainer" parent="MainLayout"]
+[node name="CenterColumn" type="VBoxContainer" parent="MainContainer/GameLayout"]
+custom_minimum_size = Vector2(0, 720)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.4
+theme_override_constants/separation = 14
 
-[node name="CallerPanel" type="Panel" parent="MainLayout/CenterArea"]
-custom_minimum_size = Vector2(0, 100)
+[node name="TitleBar" type="Panel" parent="MainContainer/GameLayout/CenterColumn"]
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_5lj0w")
+theme_override_styles/panel = SubResource("StyleBoxFlat_title")
 
-[node name="BenchPanel" type="Panel" parent="MainLayout/CenterArea/CallerPanel"]
-custom_minimum_size = Vector2(400, 100)
-layout_mode = 0
-offset_left = 13.0
-offset_top = 445.0
-offset_right = 427.0
-offset_bottom = 545.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_3q6lt")
+[node name="Content" type="HBoxContainer" parent="MainContainer/GameLayout/CenterColumn/TitleBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
 
-[node name="BenchLabel" type="Label" parent="MainLayout/CenterArea/CallerPanel/BenchPanel"]
-layout_mode = 0
-offset_left = 153.0
-offset_top = 6.0
-offset_right = 251.0
-offset_bottom = 29.0
-theme_override_colors/font_color = Color(0.6666667, 0.6666667, 0.6666667, 1)
+[node name="GameTitle" type="Label" parent="MainContainer/GameLayout/CenterColumn/TitleBar/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.788235, 0.639216, 0.964706, 1)
+theme_override_colors/font_shadow_color = Color(0.541176, 0.168627, 0.886275, 0.8)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 4
 theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 18
-text = "Benched Slabs"
+theme_override_font_sizes/font_size = 52
+text = "LIMBO LODGE"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="BenchContainer" type="HBoxContainer" parent="MainLayout/CenterArea/CallerPanel/BenchPanel"]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 30.0
-offset_right = 403.0
-offset_bottom = 91.0
-theme_override_constants/separation = 5
-
-[node name="HBox" type="HBoxContainer" parent="MainLayout/CenterArea/CallerPanel"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="Spacer" type="Control" parent="MainLayout/CenterArea"]
+[node name="CallerPanel" type="Panel" parent="MainContainer/GameLayout/CenterColumn"]
+custom_minimum_size = Vector2(0, 105)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_caller")
 
-[node name="GridPanel" type="Panel" parent="MainLayout/CenterArea"]
+[node name="Content" type="HBoxContainer" parent="MainContainer/GameLayout/CenterColumn/CallerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 22
+
+[node name="CallerAvatar" type="Panel" parent="MainContainer/GameLayout/CenterColumn/CallerPanel/Content"]
+custom_minimum_size = Vector2(75, 75)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_optkc")
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_caller_avatar")
 
-[node name="GridContainer" type="GridContainer" parent="MainLayout/CenterArea/GridPanel"]
+[node name="AvatarLabel" type="Label" parent="MainContainer/GameLayout/CenterColumn/CallerPanel/Content/CallerAvatar"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -325,185 +394,506 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -20.0
-offset_top = -20.0
+offset_top = -18.0
 offset_right = 20.0
-offset_bottom = 20.0
+offset_bottom = 18.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/h_separation = 6
-theme_override_constants/v_separation = 6
+theme_override_font_sizes/font_size = 42
+text = "🎩"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DialogueBox" type="VBoxContainer" parent="MainContainer/GameLayout/CenterColumn/CallerPanel/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="CallerName" type="Label" parent="MainContainer/GameLayout/CenterColumn/CallerPanel/Content/DialogueBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.666667, 0.333333, 1, 1)
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 15
+text = "THE FERRYMAN"
+
+[node name="CallerText" type="Label" parent="MainContainer/GameLayout/CenterColumn/CallerPanel/Content/DialogueBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.815686, 0.721569, 0.909804, 1)
+theme_override_font_sizes/font_size = 17
+text = "\"Place your slabs wisely, wanderer... Each choice echoes in eternity...\""
+autowrap_mode = 3
+
+[node name="GridPanel" type="Panel" parent="MainContainer/GameLayout/CenterColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_grid")
+
+[node name="BoardLayout" type="HBoxContainer" parent="MainContainer/GameLayout/CenterColumn/GridPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -76.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="Spacer" type="Control" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout"]
+custom_minimum_size = Vector2(15, 0)
+layout_mode = 2
+
+[node name="LimboLetters" type="VBoxContainer" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="LetterL" type="Panel" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters"]
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_letter_L")
+
+[node name="Label" type="Label" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters/LetterL"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -25.0
+offset_top = -30.0
+offset_right = 25.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.333333, 0.333333, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 60
+text = "L"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LetterI" type="Panel" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters"]
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_letter_I")
+
+[node name="Label" type="Label" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters/LetterI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -25.0
+offset_top = -30.0
+offset_right = 25.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.6, 0.333333, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 60
+text = "I"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LetterM" type="Panel" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters"]
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_letter_M")
+
+[node name="Label" type="Label" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters/LetterM"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -25.0
+offset_top = -30.0
+offset_right = 25.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 0.333333, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 60
+text = "M"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LetterB" type="Panel" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters"]
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_letter_B")
+
+[node name="Label" type="Label" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters/LetterB"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -25.0
+offset_top = -30.0
+offset_right = 25.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.333333, 1, 0.333333, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 60
+text = "B"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LetterO" type="Panel" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters"]
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_letter_O")
+
+[node name="Label" type="Label" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters/LetterO"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -25.0
+offset_top = -30.0
+offset_right = 25.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.666667, 0.333333, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 60
+text = "O"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GridContainer" type="GridContainer" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/h_separation = 9
+theme_override_constants/v_separation = 9
 columns = 5
 
-[node name="CenterPanel" type="Panel" parent="."]
-layout_mode = 0
-offset_left = 60.0
-offset_right = 60.0
-offset_bottom = 720.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_pxj3o")
-
-[node name="RightSidebar" type="VBoxContainer" parent="."]
-custom_minimum_size = Vector2(340, 300)
-layout_mode = 0
-offset_left = 680.0
-offset_top = 90.0
-offset_right = 720.0
-offset_bottom = 130.0
-theme_override_constants/separation = 10
-
-[node name="TitleLabel" type="Label" parent="RightSidebar"]
+[node name="BenchSection" type="Panel" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout"]
+custom_minimum_size = Vector2(0, 125)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.6666667, 0.53333336, 1, 1)
-theme_override_constants/outline_size = 7
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 47
-text = "LIMBO LODGE"
-horizontal_alignment = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_bench")
 
-[node name="Spacer1" type="Control" parent="RightSidebar"]
-custom_minimum_size = Vector2(0, 5)
-layout_mode = 2
-
-[node name="CurrentSlabPanel" type="Panel" parent="RightSidebar"]
-custom_minimum_size = Vector2(300, 120)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_3q6lt")
-
-[node name="SlabLabel" type="Label" parent="RightSidebar/CurrentSlabPanel"]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 8.0
-offset_right = 107.0
-offset_bottom = 31.0
-theme_override_colors/font_color = Color(0.6666667, 0.6666667, 0.6666667, 1)
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 20
-text = "Current Slab"
-
-[node name="SlabDisplay" type="CenterContainer" parent="RightSidebar/CurrentSlabPanel"]
+[node name="Content" type="VBoxContainer" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/BenchSection"]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.68500006
-anchor_top = 0.5
-anchor_right = 0.68500006
-anchor_bottom = 0.5
-offset_left = -49.900024
-offset_top = -46.0
-offset_right = 50.099976
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="StatsPanel" type="Panel" parent="RightSidebar"]
-custom_minimum_size = Vector2(300, 250)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_f51tk")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="RightSidebar/StatsPanel"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
 theme_override_constants/separation = 10
 
-[node name="ScoreLabel" type="Label" parent="RightSidebar/StatsPanel/VBoxContainer"]
+[node name="BenchTitle" type="Label" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/BenchSection/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.53333336, 1)
+theme_override_colors/font_color = Color(0.603922, 0.454902, 0.717647, 1)
 theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 22
-text = "
- Score: 0"
+theme_override_font_sizes/font_size = 19
+text = "⚰️ BENCHED SLABS ⚰️"
+horizontal_alignment = 1
 
-[node name="TargetLabel" type="Label" parent="RightSidebar/StatsPanel/VBoxContainer"]
+[node name="BenchContainer" type="HBoxContainer" parent="MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/BenchSection/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.53333336, 0.53333336, 1)
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 22
-text = " Target: 100"
+size_flags_horizontal = 4
+size_flags_vertical = 3
+theme_override_constants/separation = 10
 
-[node name="DrawsLabel" type="Label" parent="RightSidebar/StatsPanel/VBoxContainer"]
+[node name="RightSidebar" type="VBoxContainer" parent="MainContainer/GameLayout"]
+custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.53333336, 1, 1, 1)
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 20
-text = " Draws: 8/8"
+theme_override_constants/separation = 14
 
-[node name="RoundLabel" type="Label" parent="RightSidebar/StatsPanel/VBoxContainer"]
+[node name="CurrentSlabPanel" type="Panel" parent="MainContainer/GameLayout/RightSidebar"]
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.53333336, 1, 0.53333336, 1)
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 20
-text = " Round: 1/3"
+theme_override_styles/panel = SubResource("StyleBoxFlat_slab")
 
-[node name="EncounterLabel" type="Label" parent="RightSidebar/StatsPanel/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6666667, 0.6666667, 0.6666667, 1)
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 17
-text = " Encounter 1/3"
+[node name="Content" type="VBoxContainer" parent="MainContainer/GameLayout/RightSidebar/CurrentSlabPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
 
-[node name="Spacer2" type="Control" parent="RightSidebar"]
-custom_minimum_size = Vector2(0, 5)
+[node name="SlabLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/CurrentSlabPanel/Content"]
 layout_mode = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="RightSidebar"]
-layout_mode = 2
-theme_override_constants/separation = 5
-
-[node name="DrawButton" type="Button" parent="RightSidebar/HBoxContainer"]
-custom_minimum_size = Vector2(95, 50)
-layout_mode = 2
+theme_override_colors/font_color = Color(0.603922, 0.478431, 0.721569, 1)
 theme_override_fonts/font = ExtResource("2_legbf")
 theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_gf42p")
+text = "☠ CURRENT SLAB ☠"
+horizontal_alignment = 1
+
+[node name="SlabDisplay" type="CenterContainer" parent="MainContainer/GameLayout/RightSidebar/CurrentSlabPanel/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsGrid" type="GridContainer" parent="MainContainer/GameLayout/RightSidebar"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="ScoreCard" type="Panel" parent="MainContainer/GameLayout/RightSidebar/StatsGrid"]
+custom_minimum_size = Vector2(174, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_base")
+
+[node name="Content" type="VBoxContainer" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/ScoreCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="StatLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/ScoreCard/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.603922, 0.454902, 0.717647, 1)
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 14
+text = "SCORE"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/ScoreCard/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.921569, 0.231373, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.921569, 0.231373, 0.5)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 12
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 40
+text = "0"
+horizontal_alignment = 1
+
+[node name="BorderLeft" type="ColorRect" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/ScoreCard"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+color = Color(1, 0.921569, 0.231373, 1)
+
+[node name="TargetCard" type="Panel" parent="MainContainer/GameLayout/RightSidebar/StatsGrid"]
+custom_minimum_size = Vector2(174, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_base")
+
+[node name="Content" type="VBoxContainer" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/TargetCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="StatLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/TargetCard/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.603922, 0.454902, 0.717647, 1)
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 14
+text = "TARGET"
+horizontal_alignment = 1
+
+[node name="TargetLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/TargetCard/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.321569, 0.321569, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.321569, 0.321569, 0.5)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 12
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 40
+text = "100"
+horizontal_alignment = 1
+
+[node name="BorderLeft" type="ColorRect" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/TargetCard"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+color = Color(1, 0.321569, 0.321569, 1)
+
+[node name="DrawsCard" type="Panel" parent="MainContainer/GameLayout/RightSidebar/StatsGrid"]
+custom_minimum_size = Vector2(174, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_base")
+
+[node name="Content" type="VBoxContainer" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/DrawsCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="StatLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/DrawsCard/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.603922, 0.454902, 0.717647, 1)
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 14
+text = "DRAWS"
+horizontal_alignment = 1
+
+[node name="DrawsLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/DrawsCard/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.301961, 0.815686, 0.882353, 1)
+theme_override_colors/font_shadow_color = Color(0.301961, 0.815686, 0.882353, 0.5)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 12
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 40
+text = "8/8"
+horizontal_alignment = 1
+
+[node name="BorderLeft" type="ColorRect" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/DrawsCard"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+color = Color(0.301961, 0.815686, 0.882353, 1)
+
+[node name="RoundCard" type="Panel" parent="MainContainer/GameLayout/RightSidebar/StatsGrid"]
+custom_minimum_size = Vector2(174, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_base")
+
+[node name="Content" type="VBoxContainer" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/RoundCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="StatLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/RoundCard/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.603922, 0.454902, 0.717647, 1)
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 14
+text = "ROUND"
+horizontal_alignment = 1
+
+[node name="RoundLabel" type="Label" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/RoundCard/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.411765, 0.941176, 0.682353, 1)
+theme_override_colors/font_shadow_color = Color(0.411765, 0.941176, 0.682353, 0.5)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
+theme_override_constants/shadow_outline_size = 12
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 40
+text = "1/3"
+horizontal_alignment = 1
+
+[node name="BorderLeft" type="ColorRect" parent="MainContainer/GameLayout/RightSidebar/StatsGrid/RoundCard"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+color = Color(0.411765, 0.941176, 0.682353, 1)
+
+[node name="ArtifactsPanel" type="Panel" parent="MainContainer/GameLayout/RightSidebar"]
+custom_minimum_size = Vector2(0, 280)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_artifacts")
+
+[node name="Content" type="VBoxContainer" parent="MainContainer/GameLayout/RightSidebar/ArtifactsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="ArtifactsTitle" type="Label" parent="MainContainer/GameLayout/RightSidebar/ArtifactsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.603922, 0.478431, 0.721569, 1)
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 15
+text = "👁️ ARTIFACTS 👁️"
+horizontal_alignment = 1
+
+[node name="ArtifactGrid" type="GridContainer" parent="MainContainer/GameLayout/RightSidebar/ArtifactsPanel/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 3
+
+[node name="ActionButtons" type="HBoxContainer" parent="MainContainer/GameLayout/RightSidebar"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DrawButton" type="Button" parent="MainContainer/GameLayout/RightSidebar/ActionButtons"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.831373, 1, 0.639216, 1)
+theme_override_fonts/font = ExtResource("2_legbf")
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_draw")
 text = "DRAW"
 
-[node name="Control" type="Control" parent="RightSidebar/HBoxContainer"]
-custom_minimum_size = Vector2(15, 0)
+[node name="BenchButton" type="Button" parent="MainContainer/GameLayout/RightSidebar/ActionButtons"]
+custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
-
-[node name="BenchButton" type="Button" parent="RightSidebar/HBoxContainer"]
-custom_minimum_size = Vector2(95, 50)
-layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.964706, 0.639216, 1)
 theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_gf42p")
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_bench")
 text = "BENCH"
 
-[node name="Control2" type="Control" parent="RightSidebar/HBoxContainer"]
-custom_minimum_size = Vector2(15, 0)
+[node name="ScoreButton" type="Button" parent="MainContainer/GameLayout/RightSidebar/ActionButtons"]
+custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
-
-[node name="ScoreButton" type="Button" parent="RightSidebar/HBoxContainer"]
-custom_minimum_size = Vector2(95, 50)
-layout_mode = 2
+theme_override_colors/font_color = Color(0.956863, 0.639216, 1, 1)
 theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_d02nu")
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_score")
 text = "SCORE"
-
-[node name="ArtifactPanel" type="Panel" parent="RightSidebar"]
-layout_mode = 2
-
-[node name="VBox" type="VBoxContainer" parent="RightSidebar/ArtifactPanel"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="Label" type="Label" parent="RightSidebar/ArtifactPanel/VBox"]
-layout_mode = 2
-text = "ARTIFACTS"
-
-[node name="ArtifactGrid" type="GridContainer" parent="RightSidebar/ArtifactPanel/VBox"]
-layout_mode = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-
-[node name="BottomInfo" type="Label" parent="."]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 690.0
-offset_right = 50.0
-offset_bottom = 713.0
-theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
-theme_override_fonts/font = ExtResource("2_legbf")
-theme_override_font_sizes/font_size = 13
-text = "Base score = slab number | Letter match +10 | Perfect match +25 | Complete lines for multipliers!"

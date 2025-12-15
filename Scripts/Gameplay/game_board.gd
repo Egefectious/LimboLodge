@@ -1,28 +1,36 @@
 extends Control
 
-# === NODE REFERENCES ===
-# UPDATED PATHS TO MATCH YOUR NEW SCENE STRUCTURE
-@onready var grid_container = $MainLayout/CenterArea/GridPanel/GridContainer
-@onready var limbo_letters = $MainLayout/LeftSidebar/LimboLetters
+# === NODE REFERENCES - PROFESSIONAL LAYOUT ===
+@onready var grid_container = $MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/GridContainer
+@onready var limbo_letters = $MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/LimboLetters
 
-# Right Sidebar Paths
-@onready var current_slab_display = $RightSidebar/CurrentSlabPanel/SlabDisplay
-@onready var score_label = $RightSidebar/StatsPanel/VBoxContainer/ScoreLabel
-@onready var target_label = $RightSidebar/StatsPanel/VBoxContainer/TargetLabel
-@onready var draws_label = $RightSidebar/StatsPanel/VBoxContainer/DrawsLabel
-@onready var round_label = $RightSidebar/StatsPanel/VBoxContainer/RoundLabel
-@onready var encounter_label = $RightSidebar/StatsPanel/VBoxContainer/EncounterLabel
+# Title & Caller
+@onready var game_title = $MainContainer/GameLayout/CenterColumn/TitleBar/Content/GameTitle
+@onready var caller_avatar = $MainContainer/GameLayout/CenterColumn/CallerPanel/Content/CallerAvatar/AvatarLabel
+@onready var caller_name = $MainContainer/GameLayout/CenterColumn/CallerPanel/Content/DialogueBox/CallerName
+@onready var caller_text = $MainContainer/GameLayout/CenterColumn/CallerPanel/Content/DialogueBox/CallerText
+
+# Current Slab
+@onready var current_slab_display = $MainContainer/GameLayout/RightSidebar/CurrentSlabPanel/Content/SlabDisplay
+
+# Stats Cards
+@onready var score_label = $MainContainer/GameLayout/RightSidebar/StatsGrid/ScoreCard/Content/ScoreLabel
+@onready var target_label = $MainContainer/GameLayout/RightSidebar/StatsGrid/TargetCard/Content/TargetLabel
+@onready var draws_label = $MainContainer/GameLayout/RightSidebar/StatsGrid/DrawsCard/Content/DrawsLabel
+@onready var round_label = $MainContainer/GameLayout/RightSidebar/StatsGrid/RoundCard/Content/RoundLabel
+
 
 # Buttons
-@onready var draw_button = $RightSidebar/HBoxContainer/DrawButton
-@onready var bench_button = $RightSidebar/HBoxContainer/BenchButton
-@onready var score_button = $RightSidebar/HBoxContainer/ScoreButton
+@onready var draw_button = $MainContainer/GameLayout/RightSidebar/ActionButtons/DrawButton
+@onready var bench_button = $MainContainer/GameLayout/RightSidebar/ActionButtons/BenchButton
+@onready var score_button = $MainContainer/GameLayout/RightSidebar/ActionButtons/ScoreButton
 
-# Bench (Now inside CallerPanel)
-@onready var bench_display = $MainLayout/CenterArea/CallerPanel/BenchPanel/BenchContainer
+# Bench
+@onready var bench_display = $MainContainer/GameLayout/CenterColumn/GridPanel/BoardLayout/BenchSection
 
-# Artifacts (Note: You named the panel "ArtifactPanel" singular in scene, but "VBox" inside it)
-@onready var artifact_grid = $RightSidebar/ArtifactPanel/VBox/ArtifactGrid
+# Artifacts
+@onready var artifact_grid = $MainContainer/GameLayout/RightSidebar/ArtifactsPanel/Content/ArtifactGrid
+
 # === STATE ===
 var cells: Array = []
 var current_slab: SlabData = null
@@ -76,13 +84,19 @@ func setup_extra_ui():
 func _create_next_round_button():
 	next_round_button = Button.new()
 	next_round_button.text = "HOLD & CONTINUE"
-	next_round_button.custom_minimum_size = Vector2(300, 50)
+	next_round_button.custom_minimum_size = Vector2(340, 54)
 	next_round_button.add_theme_font_override("font", CUSTOM_FONT)
 	next_round_button.add_theme_font_size_override("font_size", 24)
-	next_round_button.modulate = Color(0.6, 1.0, 0.6)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.137255, 0.27451, 0.0666667, 1)
+	style.border_color = Color(0.247059, 0.490196, 0.117647, 1)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(8)
+	next_round_button.add_theme_stylebox_override("normal", style)
 	
 	var bottom_area = Control.new()
-	bottom_area.position = Vector2(680, 500)
+	bottom_area.position = Vector2(470, 600)
 	add_child(bottom_area)
 	bottom_area.add_child(next_round_button)
 	
@@ -91,15 +105,35 @@ func _create_next_round_button():
 
 func _create_deck_popup():
 	deck_popup = PopupPanel.new()
-	deck_popup.size = Vector2(800, 600)
+	deck_popup.size = Vector2(900, 650)
 	add_child(deck_popup)
 	
+	var margin = MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_bottom", 20)
+	deck_popup.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 15)
+	margin.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = "YOUR DECK"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_override("font", CUSTOM_FONT)
+	title.add_theme_font_size_override("font_size", 36)
+	title.add_theme_color_override("font_color", Color(0.788235, 0.639216, 0.964706, 1))
+	vbox.add_child(title)
+	
 	var deck_scroll = ScrollContainer.new()
-	deck_scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
-	deck_popup.add_child(deck_scroll)
+	deck_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(deck_scroll)
 	
 	var deck_grid = GridContainer.new()
-	deck_grid.columns = 6
+	deck_grid.columns = 7
 	deck_grid.name = "DeckGrid"
 	deck_grid.add_theme_constant_override("h_separation", 15)
 	deck_grid.add_theme_constant_override("v_separation", 15)
@@ -107,55 +141,38 @@ func _create_deck_popup():
 
 func _create_view_deck_button():
 	var view_deck_btn = Button.new()
-	view_deck_btn.text = "Deck"
-	view_deck_btn.position = Vector2(1180, 20)
-	view_deck_btn.size = Vector2(80, 40)
+	view_deck_btn.text = "VIEW DECK"
+	view_deck_btn.position = Vector2(1100, 24)
+	view_deck_btn.custom_minimum_size = Vector2(150, 45)
+	view_deck_btn.add_theme_font_override("font", CUSTOM_FONT)
+	view_deck_btn.add_theme_font_size_override("font_size", 18)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.0784314, 0.0392157, 0.121569, 0.9)
+	style.border_color = Color(0.415686, 0.105882, 0.603922, 1)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(8)
+	view_deck_btn.add_theme_stylebox_override("normal", style)
+	
 	view_deck_btn.pressed.connect(_show_deck)
 	add_child(view_deck_btn)
 
 func animate_limbo_letters():
-	# Colors mapped by index 0-4 (L, I, M, B, O)
-	var border_colors = [
-		Color("#ff5555"), # L
-		Color("#ff9955"), # I
-		Color("#ffff55"), # M
-		Color("#55ff55"), # B
-		Color("#aa55ff")  # O
-	]
-	
-	var letters_container = $MainLayout/LeftSidebar/LimboLetters
-	
-	for i in range(letters_container.get_child_count()):
-		var panel = letters_container.get_child(i)
-		
-		# --- 1. APPLY HTML STYLE ---
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.1, 0.05, 0.15, 0.9) # Dark Purple card bg
-		style.border_color = border_colors[i]       # Unique Color per letter
-		style.set_border_width_all(3)
-		style.set_corner_radius_all(6)
-	  
-		# Add that subtle inner glow from HTML using shadow properties
-		style.shadow_color = border_colors[i]
-		style.shadow_size = 2 # Subtle glow
-	   
-		panel.add_theme_stylebox_override("panel", style)
-	   
-		# Style the Label inside
+	for i in range(limbo_letters.get_child_count()):
+		var panel = limbo_letters.get_child(i)
+# Instead of animating 'panel', we animate the 'label' inside it.
 		var label = panel.get_node("Label")
-		label.add_theme_color_override("font_color", border_colors[i])
-		
-		# --- 2. APPLY ANIMATION (Floating Sine Wave) ---
-		var start_y = panel.position.y # Use panel position, not label
-		
-		# We animate the panel itself, not just the label inside
+	
+	# Ensure label can be moved (Control nodes inside Panels usually allow manual positioning)
+		var start_y = label.position.y 
+	
 		var tween = create_tween()
 		tween.set_loops()
-		
-		# Float Up
-		tween.tween_property(panel, "position:y", start_y - 6, 1.5).set_trans(Tween.TRANS_SINE).set_delay(i * 0.1)
-		# Float Down
-		tween.tween_property(panel, "position:y", start_y + 0, 1.5).set_trans(Tween.TRANS_SINE)
+	
+	# Float the LABEL, not the PANEL
+		tween.tween_property(label, "position:y", start_y - 6, 1.5).set_trans(Tween.TRANS_SINE).set_delay(i * 0.1)
+		tween.tween_property(label, "position:y", start_y, 1.5).set_trans
+
 # === GRID SETUP ===
 
 func setup_grid():
@@ -186,13 +203,48 @@ func update_ui():
 	_update_bench_display()
 	_update_button_states()
 	_update_artifacts_display()
+	_update_caller_dialogue()
 
 func _update_labels():
-	score_label.text = "\n Score: " + str(Global.current_score)
-	target_label.text = " Target: " + str(Global.opponent_target)
-	draws_label.text = " Draws: " + str(Global.draws_remaining) + "/" + str(Global.max_draws)
-	round_label.text = " Round: " + str(Global.current_round) + "/3"
-	encounter_label.text = " Encounter " + str(Global.current_encounter)
+	score_label.text = str(Global.current_score)
+	target_label.text = str(Global.opponent_target)
+	draws_label.text = "%d/%d" % [Global.draws_remaining, Global.max_draws]
+	round_label.text = "%d/3" % Global.current_round
+
+
+func _update_caller_dialogue():
+	# Update caller based on encounter
+	var caller_data = _get_caller_for_encounter(Global.current_encounter)
+	caller_avatar.text = caller_data.avatar
+	caller_name.text = caller_data.name
+	caller_text.text = caller_data.dialogue
+
+func _get_caller_for_encounter(encounter: int) -> Dictionary:
+	match encounter:
+		1:
+			return {
+				"avatar": "🎩",
+				"name": "THE FERRYMAN",
+				"dialogue": "\"Welcome to Limbo Lodge, wanderer. Place your slabs wisely...\""
+			}
+		2:
+			return {
+				"avatar": "👤",
+				"name": "THE BARBER",
+				"dialogue": "\"A closer shave with fate, I see. Let's make this interesting...\""
+			}
+		3:
+			return {
+				"avatar": "🔮",
+				"name": "THE FORTUNE TELLER",
+				"dialogue": "\"I see your future... but can you place it correctly?\""
+			}
+		_:
+			return {
+				"avatar": "💀",
+				"name": "THE REAPER",
+				"dialogue": "\"Your time grows short. Prove yourself worthy.\""
+			}
 
 func _update_button_states():
 	var has_slab = (current_slab != null)
@@ -202,20 +254,27 @@ func _update_button_states():
 	draw_button.disabled = out_of_draws or has_slab
 	bench_button.disabled = not has_slab or not must_place_or_bench or Global.benched_slabs.size() >= Global.max_bench_slots
 	
-	# Next Round / Score Logic
 	if is_round_end and Global.current_round < 3:
 		next_round_button.show()
 		score_button.text = "CASH IN"
-		score_button.modulate = Color(1, 0.8, 0.4)
+		var style = score_button.get_theme_stylebox("normal").duplicate()
+		style.bg_color = Color(0.27451, 0.2, 0.0666667, 1)
+		style.border_color = Color(0.490196, 0.356863, 0.117647, 1)
+		score_button.add_theme_stylebox_override("normal", style)
 	else:
 		next_round_button.hide()
 		score_button.text = "SCORE"
-		score_button.modulate = Color.WHITE
+		var style = score_button.get_theme_stylebox("normal").duplicate()
+		style.bg_color = Color(0.231373, 0.0666667, 0.27451, 1)
+		style.border_color = Color(0.411765, 0.117647, 0.490196, 1)
+		score_button.add_theme_stylebox_override("normal", style)
 	
-	# Force Score attention if R3 end
 	if is_round_end and Global.current_round >= 3:
 		score_button.text = "FINISH!"
-		score_button.modulate = Color(1, 0.5, 0.5)
+		var style = score_button.get_theme_stylebox("normal").duplicate()
+		style.bg_color = Color(0.4, 0.05, 0.05, 1)
+		style.border_color = Color(0.8, 0.1, 0.1, 1)
+		score_button.add_theme_stylebox_override("normal", style)
 
 func _update_current_slab_display():
 	for child in current_slab_display.get_children(): 
@@ -223,14 +282,15 @@ func _update_current_slab_display():
 	
 	if current_slab == null:
 		var label = Label.new()
-		label.text = "Click Draw"
+		label.text = "Click DRAW"
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 20)
-		label.add_theme_color_override("font_color", Color.GRAY)
+		label.add_theme_font_override("font", CUSTOM_FONT)
+		label.add_theme_font_size_override("font_size", 22)
+		label.add_theme_color_override("font_color", Color(0.5, 0.4, 0.6, 1))
 		current_slab_display.add_child(label)
 	else:
-		var visual = SlabBuilder.create_visual(current_slab, 1.2)
+		var visual = SlabBuilder.create_visual(current_slab, 1.3)
 		current_slab_display.add_child(visual)
 
 func _update_bench_display():
@@ -243,13 +303,15 @@ func _update_bench_display():
 
 func _create_bench_slot(index: int) -> Button:
 	var slot_btn = Button.new()
-	slot_btn.custom_minimum_size = Vector2(50, 50)
+	slot_btn.custom_minimum_size = Vector2(95, 95)
 	
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.1, 0.3)
-	style.border_color = Color(0.3, 0.3, 0.3, 0.5)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(6)
+	style.bg_color = Color(0.039216, 0.019608, 0.078431, 0.7)
+	style.border_color = Color(0.239216, 0.12549, 0.345098, 1)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(8)
+	style.shadow_size = 8
+	style.shadow_color = Color(0, 0, 0, 0.5)
 	slot_btn.add_theme_stylebox_override("normal", style)
 	
 	if index < Global.benched_slabs.size():
@@ -258,14 +320,63 @@ func _create_bench_slot(index: int) -> Button:
 		container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		container.set_anchors_preset(Control.PRESET_FULL_RECT)
 		
-		var vis = SlabBuilder.create_visual(slab, 0.4)
+		var vis = SlabBuilder.create_visual(slab, 0.75)
 		container.add_child(vis)
 		slot_btn.add_child(container)
 		slot_btn.pressed.connect(_on_benched_slab_clicked.bind(index))
+		
+		# Hover effect
+		var hover_style = style.duplicate()
+		hover_style.border_color = Color(0.545098, 0.301961, 0.788235, 1)
+		hover_style.shadow_size = 15
+		slot_btn.add_theme_stylebox_override("hover", hover_style)
 	else:
 		slot_btn.disabled = true
+		style.bg_color = Color(0.02, 0.01, 0.04, 0.5)
+		style.border_color = Color(0.15, 0.08, 0.2, 1)
 	
 	return slot_btn
+
+func _update_artifacts_display():
+	for child in artifact_grid.get_children():
+		child.queue_free()
+	
+	# Always show 6 slots (3x2 grid)
+	var max_slots = 6
+	for i in range(max_slots):
+		var slot = Panel.new()
+		slot.custom_minimum_size = Vector2(110, 110)
+		
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.039216, 0.019608, 0.078431, 0.7)
+		style.border_color = Color(0.239216, 0.12549, 0.345098, 1)
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(8)
+		style.shadow_size = 8
+		slot.add_theme_stylebox_override("panel", style)
+		
+		# If we have an artifact for this slot, show it
+		if i < Global.active_artifacts.size():
+			var artifact_id = Global.active_artifacts[i]
+			var label = Label.new()
+			label.text = _get_artifact_icon(artifact_id)
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			label.set_anchors_preset(Control.PRESET_FULL_RECT)
+			label.add_theme_font_size_override("font_size", 42)
+			slot.add_child(label)
+		
+		artifact_grid.add_child(slot)
+
+func _get_artifact_icon(id: String) -> String:
+	match id:
+		"infinite_reuse": return "🔮"
+		"eternal_slab": return "⚱️"
+		"bonus_five": return "✨"
+		"coin_rush": return "💰"
+		"wild_letter": return "🎭"
+		"wild_number": return "🎲"
+		_: return "📦"
 
 # === BUTTON ACTIONS ===
 
@@ -306,16 +417,14 @@ func _on_cell_clicked(cell_index: int):
 		AudioManager.play("error")
 		return
 	
-	# Place slab
 	Global.placed_slabs[cell_index] = current_slab
 	cells[cell_index].place_slab(current_slab)
 	
-	# Feedback
 	var is_perfect = (current_slab.letter == cells[cell_index].letter and 
 					  current_slab.number == cells[cell_index].grid_number)
 	if is_perfect:
 		AudioManager.play("place", Vector2(1.1, 1.3))
-		create_particle_burst(cells[cell_index].global_position + Vector2(37, 37))
+		create_particle_burst(cells[cell_index].global_position + Vector2(43, 43))
 	else:
 		AudioManager.play("place")
 	
@@ -326,7 +435,7 @@ func _on_cell_clicked(cell_index: int):
 func _on_next_round_pressed():
 	Global.start_new_round_logic(true)
 	AudioManager.play("draw")
-	show_message("Draws Refilled! Combo continues...", Color.GREEN)
+	show_message("Draws Refilled! Combo continues...", Color(0.411765, 0.941176, 0.682353, 1))
 	update_ui()
 
 # === SCORING ===
@@ -338,7 +447,7 @@ func _on_score_button_pressed():
 	is_animating = true
 	_disable_all_buttons()
 	
-	score_label.text = "SCORE: 0"
+	score_label.text = "0"
 	var result = Global.calculate_score()
 	
 	await score_manager.run_score_sequence(result, cells)
@@ -358,7 +467,7 @@ func show_nice_score_screen(result: Dictionary):
 	score_modal = Panel.new()
 	score_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0, 0, 0, 0.85)
+	style.bg_color = Color(0, 0, 0, 0.92)
 	score_modal.add_theme_stylebox_override("panel", style)
 	add_child(score_modal)
 	
@@ -367,8 +476,8 @@ func show_nice_score_screen(result: Dictionary):
 	score_modal.add_child(center)
 	
 	var vbox = VBoxContainer.new()
-	vbox.custom_minimum_size = Vector2(500, 300)
-	vbox.add_theme_constant_override("separation", 20)
+	vbox.custom_minimum_size = Vector2(600, 400)
+	vbox.add_theme_constant_override("separation", 25)
 	center.add_child(vbox)
 	
 	_add_score_header(vbox)
@@ -382,28 +491,32 @@ func _add_score_header(vbox: VBoxContainer):
 	header.text = "ROUND COMPLETE"
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	header.add_theme_font_override("font", CUSTOM_FONT)
-	header.add_theme_font_size_override("font_size", 64)
+	header.add_theme_font_size_override("font_size", 68)
 	header.add_theme_color_override("font_color", Color.GOLD)
-	header.pivot_offset = Vector2(250, 32)
+	header.pivot_offset = Vector2(300, 34)
 	vbox.add_child(header)
 	
 	var t = create_tween().set_loops()
-	t.tween_property(header, "scale", Vector2(1.05, 1.05), 1.0).set_trans(Tween.TRANS_SINE)
-	t.tween_property(header, "scale", Vector2(1.0, 1.0), 1.0).set_trans(Tween.TRANS_SINE)
+	t.tween_property(header, "scale", Vector2(1.05, 1.05), 1.2).set_trans(Tween.TRANS_SINE)
+	t.tween_property(header, "scale", Vector2(1.0, 1.0), 1.2).set_trans(Tween.TRANS_SINE)
 
 func _add_score_total(vbox: VBoxContainer, result: Dictionary):
 	var score_txt = Label.new()
 	score_txt.text = str(result.total_score)
 	score_txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	score_txt.add_theme_font_override("font", CUSTOM_FONT)
-	score_txt.add_theme_font_size_override("font_size", 96)
+	score_txt.add_theme_font_size_override("font_size", 110)
 	score_txt.add_theme_color_override("font_color", Color.WHITE)
+	score_txt.add_theme_color_override("font_shadow_color", Color(1, 0.921569, 0.231373, 0.6))
+	score_txt.add_theme_constant_override("shadow_outline_size", 20)
 	vbox.add_child(score_txt)
 
 func _add_score_details(vbox: VBoxContainer, result: Dictionary):
 	var details = Label.new()
-	details.text = "Perfect Matches: %d  | Line Bonuses: %d" % [result.perfect_matches, result.perfect_lines]
+	details.text = "Perfect Matches: %d  |  Line Bonuses: %d" % [result.perfect_matches, result.perfect_lines]
 	details.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	details.add_theme_font_size_override("font_size", 18)
+	details.add_theme_color_override("font_color", Color(0.815686, 0.721569, 0.909804, 1))
 	vbox.add_child(details)
 
 func _add_score_rewards(vbox: VBoxContainer, result: Dictionary):
@@ -411,22 +524,28 @@ func _add_score_rewards(vbox: VBoxContainer, result: Dictionary):
 	rewards.text = "+%d Coins   +%d Obols" % [result.coins_earned, result.obols_earned]
 	rewards.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rewards.add_theme_color_override("font_color", Color.GREEN_YELLOW)
-	rewards.add_theme_font_size_override("font_size", 24)
+	rewards.add_theme_font_size_override("font_size", 28)
 	vbox.add_child(rewards)
 
 func _add_continue_button(vbox: VBoxContainer):
 	var btn = Button.new()
 	btn.text = "CONTINUE"
-	btn.custom_minimum_size = Vector2(0, 60)
+	btn.custom_minimum_size = Vector2(0, 65)
 	btn.add_theme_font_override("font", CUSTOM_FONT)
-	btn.add_theme_font_size_override("font_size", 32)
+	btn.add_theme_font_size_override("font_size", 36)
 	btn.pressed.connect(_on_score_confirmed)
+	
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.137255, 0.27451, 0.0666667, 1)
+	btn_style.border_color = Color(0.247059, 0.490196, 0.117647, 1)
+	btn_style.set_border_width_all(3)
+	btn_style.set_corner_radius_all(8)
+	btn.add_theme_stylebox_override("normal", btn_style)
+	
 	vbox.add_child(btn)
 	
 	btn.modulate.a = 0
-	create_tween().tween_property(btn, "modulate:a", 1.0, 0.5).set_delay(0.5)
-
-# === GAME END LOGIC ===
+	create_tween().tween_property(btn, "modulate:a", 1.0, 0.5).set_delay(0.6)
 
 func _on_score_confirmed():
 	score_modal.queue_free()
@@ -438,12 +557,7 @@ func _on_score_confirmed():
 	if Global.current_score >= Global.opponent_target:
 		show_message("ENCOUNTER COMPLETE!", Color.GOLD)
 		await get_tree().create_timer(1.5).timeout
-		
-		# CHANGE: Go to Shop instead of reloading game directly!
-		# We do NOT call Global.start_new_encounter() yet, 
-		# we let the Shop handle that transition.
 		get_tree().change_scene_to_file("res://Scenes/shop.tscn")
-		
 	elif Global.current_round >= 3:
 		show_message("GAME OVER", Color.RED)
 		await get_tree().create_timer(1.5).timeout
@@ -452,85 +566,65 @@ func _on_score_confirmed():
 		Global.start_new_round_logic(false)
 		update_ui()
 
-# === VISUAL EFFECTS ===
+# === DECK VIEWER ===
 
-func show_message(text: String, color: Color):
-	var label = Label.new()
-	label.text = text
-	label.position = Vector2(450, 50)
-	label.add_theme_font_size_override("font_size", 32)
-	label.add_theme_color_override("font_color", color)
-	label.add_theme_constant_override("outline_size", 4)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	add_child(label)
-	
-	var tween = create_tween()
-	tween.tween_property(label, "position:y", 20, 0.5).set_ease(Tween.EASE_OUT)
-	tween.tween_property(label, "modulate:a", 0.0, 0.5).set_delay(1.0)
-	tween.tween_callback(label.queue_free)
-
-func create_particle_burst(pos: Vector2):
-	for i in range(10):
-		var p = ColorRect.new()
-		p.size = Vector2(5, 5)
-		p.color = Color.GOLD
-		p.position = pos
-		add_child(p)
-		
-		var dest = pos + Vector2(randf_range(-50, 50), randf_range(-50, 50))
-		var tween = create_tween()
-		tween.tween_property(p, "position", dest, 0.4)
-		tween.parallel().tween_property(p, "modulate:a", 0, 0.4)
-		tween.tween_callback(p.queue_free)
-
-# DECK VIEWER
 func _show_deck():
-	var actual_grid = deck_popup.get_child(0).get_child(0)
-	for c in actual_grid.get_children(): c.queue_free()
+	var actual_grid = deck_popup.get_child(0).get_child(0).get_child(1).get_child(0)
+	for c in actual_grid.get_children(): 
+		c.queue_free()
+	
 	var sorted_deck = Global.deck.duplicate()
 	sorted_deck.sort_custom(func(a, b): 
 		if a.letter != b.letter: return a.letter < b.letter
 		return a.number < b.number
 	)
+	
 	for slab in sorted_deck:
-		var visual = SlabBuilder.create_visual(slab, 0.5)
+		var visual = SlabBuilder.create_visual(slab, 0.55)
 		actual_grid.add_child(visual)
+	
 	deck_popup.popup_centered()
 
-func _update_artifacts_display():
-	# 1. Clear old icons
-	for child in artifact_grid.get_children():
-		child.queue_free()
-	
-	# 2. Add current artifacts from Global
-	for artifact_id in Global.active_artifacts:
-		var slot = Panel.new()
-		slot.custom_minimum_size = Vector2(50, 50)
-		
-		# Style matches HTML .artifact-slot
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0, 0, 0, 0.5)
-		style.border_color = Color("#3d2058")
-		style.set_border_width_all(2)
-		style.set_corner_radius_all(6)
-		slot.add_theme_stylebox_override("panel", style)
-		
-		# Add Icon/Label
-		var label = Label.new()
-		label.text = _get_artifact_icon(artifact_id) # Helper to get emoji/texture
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.set_anchors_preset(Control.PRESET_FULL_RECT)
-		label.add_theme_font_size_override("font_size", 24)
-		
-		slot.add_child(label)
-		artifact_grid.add_child(slot)
+# === VISUAL EFFECTS ===
 
-# Simple helper to map IDs to the emojis seen in your HTML
-func _get_artifact_icon(id: String) -> String:
-		match id:
-			"infinite_reuse": return "🔮"
-			"eternal_slab": return "⚱️"
-			"bonus_five": return "✨"
-			"coin_rush": return "💰"
-			_: return "📦"
+func show_message(text: String, color: Color):
+	var label = Label.new()
+	label.text = text
+	label.position = Vector2(640, 60)
+	label.pivot_offset = Vector2(label.size.x / 2, 0)
+	label.add_theme_font_override("font", CUSTOM_FONT)
+	label.add_theme_font_size_override("font_size", 36)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_constant_override("outline_size", 5)
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	add_child(label)
+	
+	label.modulate.a = 0
+	label.scale = Vector2(0.8, 0.8)
+	
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "modulate:a", 1.0, 0.3)
+	tween.tween_property(label, "scale", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_BACK)
+	tween.chain().tween_interval(1.5)
+	tween.chain().tween_property(label, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(label.queue_free)
+
+func create_particle_burst(pos: Vector2):
+	for i in range(15):
+		var p = ColorRect.new()
+		p.size = Vector2(6, 6)
+		p.color = Color(1, 0.921569, 0.231373, 1)
+		p.position = pos
+		add_child(p)
+		
+		var angle = (TAU / 15) * i
+		var dist = randf_range(40, 70)
+		var dest = pos + Vector2(cos(angle), sin(angle)) * dist
+		
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(p, "position", dest, 0.5).set_ease(Tween.EASE_OUT)
+		tween.tween_property(p, "modulate:a", 0, 0.5).set_delay(0.1)
+		tween.tween_property(p, "scale", Vector2.ZERO, 0.5).set_delay(0.2)
+		tween.chain().tween_callback(p.queue_free)
