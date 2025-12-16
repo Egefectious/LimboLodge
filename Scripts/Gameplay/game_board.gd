@@ -50,6 +50,7 @@ const CUSTOM_FONT = preload("res://Assets/Fonts/Creepster-Regular.ttf")
 func _ready():
 	_initialize_systems()
 	_setup_ui()
+	_polish_ui_layout()
 	_connect_signals()
 	_start_music()
 
@@ -71,8 +72,15 @@ func _connect_signals():
 	score_button.pressed.connect(_on_score_button_pressed)
 
 func _start_music():
-	if AudioManager.music_player and not AudioManager.music_player.playing:
+	# Logic: Ambience is always running from AudioManager.
+	# We only start 'Music' if it's the specific boss.
+	
+	if Global.current_encounter == 1:
+		# Caller 1: The Ferryman (Plays your specific music)
 		AudioManager.play_music("res://Assets/Audio/music.mp3")
+	else:
+		# Later bosses (or if you want silence/ambience only for others)
+		AudioManager.stop_music()
 
 # === UI SETUP ===
 
@@ -142,7 +150,7 @@ func _create_deck_popup():
 func _create_view_deck_button():
 	var view_deck_btn = Button.new()
 	view_deck_btn.text = "VIEW DECK"
-	view_deck_btn.position = Vector2(1100, 24)
+	view_deck_btn.position = Vector2(20, 20)
 	view_deck_btn.custom_minimum_size = Vector2(150, 45)
 	view_deck_btn.add_theme_font_override("font", CUSTOM_FONT)
 	view_deck_btn.add_theme_font_size_override("font_size", 18)
@@ -290,20 +298,30 @@ func _update_current_slab_display():
 		label.add_theme_color_override("font_color", Color(0.5, 0.4, 0.6, 1))
 		current_slab_display.add_child(label)
 	else:
-		var visual = SlabBuilder.create_visual(current_slab, 1.3)
+		var visual = SlabBuilder.create_visual(current_slab, 0.8)
 		current_slab_display.add_child(visual)
 
 func _update_bench_display():
+	# Clear previous bench contents
 	for child in bench_display.get_children(): 
 		child.queue_free()
 	
+	# Create a Vertical Container for the slots
+	var container = VBoxContainer.new()
+	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Add some padding/alignment if needed
+	container.alignment = BoxContainer.ALIGNMENT_CENTER 
+	container.add_theme_constant_override("separation", 10)
+	
+	bench_display.add_child(container)
+	
 	for i in range(Global.max_bench_slots):
 		var slot_btn = _create_bench_slot(i)
-		bench_display.add_child(slot_btn)
+		container.add_child(slot_btn)
 
 func _create_bench_slot(index: int) -> Button:
 	var slot_btn = Button.new()
-	slot_btn.custom_minimum_size = Vector2(95, 95)
+	slot_btn.custom_minimum_size = Vector2(75, 75)
 	
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.039216, 0.019608, 0.078431, 0.7)
@@ -314,18 +332,33 @@ func _create_bench_slot(index: int) -> Button:
 	style.shadow_color = Color(0, 0, 0, 0.5)
 	slot_btn.add_theme_stylebox_override("normal", style)
 	
+	# --- NEW CODE: ADD B-E-N-C-H LETTERS ---
+	var bench_letters = ["B", "E", "N", "C", "H"]
+	if index < bench_letters.size():
+		var bg_label = Label.new()
+		bg_label.text = bench_letters[index]
+		bg_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		bg_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		bg_label.add_theme_font_override("font", CUSTOM_FONT)
+		bg_label.add_theme_font_size_override("font_size", 45) # Nice and big
+		# Dark purple/grey so it looks like it's carved into the slot
+		bg_label.add_theme_color_override("font_color", Color(0.25, 0.15, 0.35, 0.5)) 
+		slot_btn.add_child(bg_label)
+	# ---------------------------------------
+
 	if index < Global.benched_slabs.size():
 		var slab = Global.benched_slabs[index]
 		var container = CenterContainer.new()
 		container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		container.set_anchors_preset(Control.PRESET_FULL_RECT)
 		
-		var vis = SlabBuilder.create_visual(slab, 0.75)
+		# Kept your size preference from the previous step (0.6)
+		var vis = SlabBuilder.create_visual(slab, 0.6)
 		container.add_child(vis)
 		slot_btn.add_child(container)
 		slot_btn.pressed.connect(_on_benched_slab_clicked.bind(index))
 		
-		# Hover effect
 		var hover_style = style.duplicate()
 		hover_style.border_color = Color(0.545098, 0.301961, 0.788235, 1)
 		hover_style.shadow_size = 15
@@ -345,7 +378,7 @@ func _update_artifacts_display():
 	var max_slots = 6
 	for i in range(max_slots):
 		var slot = Panel.new()
-		slot.custom_minimum_size = Vector2(110, 110)
+		slot.custom_minimum_size = Vector2(108, 108)
 		
 		var style = StyleBoxFlat.new()
 		style.bg_color = Color(0.039216, 0.019608, 0.078431, 0.7)
@@ -392,7 +425,7 @@ func _on_bench_button_pressed():
 		Global.benched_slabs.append(current_slab)
 		current_slab = null
 		must_place_or_bench = false
-		AudioManager.play("slide")
+		AudioManager.play("click")
 		update_ui()
 	else:
 		AudioManager.play("error")
@@ -422,11 +455,14 @@ func _on_cell_clicked(cell_index: int):
 	
 	var is_perfect = (current_slab.letter == cells[cell_index].letter and 
 					  current_slab.number == cells[cell_index].grid_number)
+	
+	# --- NEW SOUND LOGIC ---
 	if is_perfect:
-		AudioManager.play("place", Vector2(1.1, 1.3))
+		AudioManager.play("chime", Vector2(1.0, 1.2)) # Magical sound
 		create_particle_burst(cells[cell_index].global_position + Vector2(43, 43))
 	else:
-		AudioManager.play("place")
+		AudioManager.play("place", Vector2(0.9, 1.0)) # Standard heavy thud
+	# -----------------------
 	
 	current_slab = null
 	must_place_or_bench = false
@@ -510,6 +546,8 @@ func _add_score_total(vbox: VBoxContainer, result: Dictionary):
 	score_txt.add_theme_color_override("font_shadow_color", Color(1, 0.921569, 0.231373, 0.6))
 	score_txt.add_theme_constant_override("shadow_outline_size", 20)
 	vbox.add_child(score_txt)
+	# --- NEW: Big sound for the final score reveal ---
+	AudioManager.play("win")
 
 func _add_score_details(vbox: VBoxContainer, result: Dictionary):
 	var details = Label.new()
@@ -628,3 +666,43 @@ func create_particle_burst(pos: Vector2):
 		tween.tween_property(p, "modulate:a", 0, 0.5).set_delay(0.1)
 		tween.tween_property(p, "scale", Vector2.ZERO, 0.5).set_delay(0.2)
 		tween.chain().tween_callback(p.queue_free)
+
+func _polish_ui_layout():
+	# --- 1. Fix Stats Cards Borders (Score, Target, etc.) ---
+	# We get the 'Card' panel by going up two levels from the label
+	# (Label -> Content -> Card)
+	var stats_labels = [score_label, target_label, draws_label, round_label]
+
+	for label in stats_labels:
+		if label and label.get_parent() and label.get_parent().get_parent():
+			var card_panel = label.get_parent().get_parent()
+
+			# Create a border style
+			var style = StyleBoxFlat.new()
+			style.bg_color = Color(0.08, 0.04, 0.12, 0.8) # Dark purple bg
+			style.border_color = Color(0.4, 0.2, 0.6, 1)  # Purple border
+			style.set_border_width_all(2)
+			style.set_corner_radius_all(8)
+
+			if card_panel is PanelContainer or card_panel is Panel:
+				card_panel.add_theme_stylebox_override("panel", style)
+
+	# --- 2. Center the Artifacts Grid ---
+	if artifact_grid and artifact_grid.get_parent():
+		var parent = artifact_grid.get_parent()
+		if parent is VBoxContainer or parent is HBoxContainer:
+			parent.alignment = BoxContainer.ALIGNMENT_CENTER
+
+		# Also make sure the grid itself tries to shrink to the center
+		artifact_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+		# Add some spacing so they aren't squashed
+		artifact_grid.add_theme_constant_override("h_separation", 15)
+		artifact_grid.add_theme_constant_override("v_separation", 15)
+
+	# --- 3. Center the Action Buttons (Draw, Bench, Score) ---
+	if draw_button and draw_button.get_parent():
+		var btn_container = draw_button.get_parent()
+		if btn_container is VBoxContainer or btn_container is HBoxContainer:
+			btn_container.alignment = BoxContainer.ALIGNMENT_CENTER
+			btn_container.add_theme_constant_override("separation", 20) # Add space between buttons

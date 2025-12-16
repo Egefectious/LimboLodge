@@ -144,6 +144,8 @@ func _add_shop_item(rarity: String):
 	var panel = Panel.new()
 	panel.custom_minimum_size = Vector2(300, 200) # Taller to fit description
 	
+	panel.mouse_entered.connect(func(): AudioManager.play("hover", Vector2(0.9, 1.0)))
+	
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.18, 1)
 	style.border_color = Color(0.3, 0.3, 0.3, 1)
@@ -217,7 +219,7 @@ func _buy_artifact(id: String, cost: int, btn: Button):
 		btn.disabled = true
 		btn.modulate = Color.GRAY
 		
-		AudioManager.play("draw")
+		AudioManager.play("buy")
 		
 		# Optional: Refresh UI or Message if needed
 		# _update_coin_display() 

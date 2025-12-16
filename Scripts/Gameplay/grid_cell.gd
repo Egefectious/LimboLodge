@@ -8,6 +8,7 @@ signal cell_clicked(cell_index: int)
 
 var placed_slab: SlabData = null
 var is_hovered: bool = false
+var base_style: StyleBoxFlat = null
 var current_panel_style: StyleBoxFlat = null 
 var current_panel_node: Panel = null
 var original_y: float = 0.0
@@ -21,10 +22,19 @@ const CUSTOM_FONT = preload("res://Assets/Fonts/Creepster-Regular.ttf")
 
 func _ready():
 	custom_minimum_size = Vector2(75, 75)
+	pivot_offset = custom_minimum_size / 2
+	
+	if background:
+		background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# 1. SAVE the original style from the scene
+		var current = background.get_theme_stylebox("panel")
+		if current:
+			base_style = current.duplicate()
+	
 	gui_input.connect(_on_gui_input)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
-	original_y = position.y
+	
 	update_display()
 	
 
@@ -179,30 +189,28 @@ func _on_gui_input(event: InputEvent):
 
 func _on_mouse_entered():
 	is_hovered = true
-	if placed_slab == null: # Only pop if empty (optional preference)
-		var tween = create_tween()
-		tween.set_parallel(true)
-		# Move UP by 3 pixels from wherever it thinks it should be
-		tween.tween_property(self, "position:y", original_y - 3, 0.1)
-		tween.tween_property(self, "scale", Vector2(1.05, 1.05), 0.1)
+	
+	if placed_slab == null:
+		AudioManager.play("hover", Vector2(1.0, 1.2))
 		
-		# Glow Effect (if background exists)
-		if background:
-			var style = background.get_theme_stylebox("panel")
-			# Create a unique copy so we don't change ALL cells
-			if style:
-				var new_style = style.duplicate()
-				new_style.border_color = Color("#6a1b9a") # Purple Glow
-				background.add_theme_stylebox_override("panel", new_style)
+	# Animation
+	var tween = create_tween()
+	tween.tween_property(self, "scale", Vector2(1.1, 1.1), 0.1).set_trans(Tween.TRANS_SINE)
+	
+	# Glow Effect
+	if background and base_style:
+		var new_style = base_style.duplicate()
+		new_style.border_color = Color("#6a1b9a") # Purple Glow
+		# 2. OVERRIDE with the glow style
+		background.add_theme_stylebox_override("panel", new_style)
 
 func _on_mouse_exited():
 	is_hovered = false
+	# Reset Animation
 	var tween = create_tween()
-	tween.set_parallel(true)
-	# Return to original Y
-	tween.tween_property(self, "position:y", original_y, 0.1)
 	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.1)
 	
-	# Remove Glow
-	if background:
-		background.remove_theme_stylebox_override("panel")
+	# Reset Glow
+	if background and base_style:
+		# 3. RESTORE the saved original style instead of removing the override
+		background.add_theme_stylebox_override("panel", base_style)
