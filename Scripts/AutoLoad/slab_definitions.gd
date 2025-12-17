@@ -5,6 +5,43 @@ extends Node
 # To balance the game, just edit the numbers here!
 
 const SLABS = {
+	
+	"coupon_cutter": {
+		"name": "Coupon Cutter", "rarity": "common", "cost": 30,
+		"desc": "Shop prices reduced by 25%",
+		"type": "economy_passive", "effect": "discount"
+	},
+	"extra_pocket": {
+		"name": "Extra Pocket", "rarity": "uncommon", "cost": 50,
+		"desc": "+1 Draw every round",
+		"type": "utility_passive", "effect": "extra_draw"
+	},
+	"carpenters_tool": {
+		"name": "Carpenter's Tool", "rarity": "common", "cost": 40,
+		"desc": "+1 Max Bench Slot",
+		"type": "utility_immediate", "effect": "max_bench"
+	},
+	"gem_of_precision": {
+		"name": "Gem of Precision", "rarity": "rare", "cost": 100,
+		"desc": "Perfect Matches add +1 perm. Base Score",
+		"type": "scaling_trigger", "effect": "scale_base"
+	},
+	"prism_of_focus": {
+		"name": "Prism of Focus", "rarity": "rare", "cost": 120,
+		"desc": "Perfect Matches add +0.1 perm. Mult",
+		"type": "scaling_trigger", "effect": "scale_mult"
+	},
+	"midas_touch": {
+		"name": "Midas Touch", "rarity": "rare", "cost": 150,
+		"desc": "All Gold earned is doubled",
+		"type": "economy_passive", "effect": "double_gold"
+	},
+	"artifact_bag": {
+		"name": "Artifact Bag", "rarity": "rare", "cost": 150,
+		"desc": "+1 Max Artifact Slot",
+		"type": "utility_immediate", "effect": "max_artifact_slot"
+	},
+	
 	# === COMMON SLABS (20) ===
 	"bonus_five": {
 		"name": "Bonus Five", "rarity": "common", "cost": 20,
@@ -239,11 +276,10 @@ const SLABS = {
 	# ... (You can add the Ultra Rares here following the same pattern)
 }
 
-# Helper to pick a random slab key by rarity
 func get_random_id(rarity: String) -> String:
 	var pool = []
 	for id in SLABS:
-		if SLABS[id].rarity == rarity:
+		if SLABS[id].get("rarity", "common") == rarity:
 			pool.append(id)
 	if pool.is_empty(): return "bonus_five"
 	return pool.pick_random()

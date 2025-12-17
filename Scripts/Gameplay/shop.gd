@@ -6,11 +6,17 @@ var message_label: Label
 var items_grid: GridContainer
 var deck_popup: PopupPanel
 var deck_grid_ref: GridContainer
+var reroll_btn: Button # New Reference
 
 const CUSTOM_FONT = preload("res://Assets/Fonts/Creepster-Regular.ttf")
 
 func _ready():
 	_setup_ui_structure()
+	# Reset reroll cost on entry logic is handled in Global.start_new_round, 
+	# but we can ensure it here too.
+	if Global.current_round == 1 and Global.current_encounter > 1:
+		Global.reroll_cost = 1
+		
 	_populate_shop_for_stage()
 	_update_header()
 
@@ -49,13 +55,17 @@ func _setup_ui_structure():
 	items_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.add_child(items_grid)
 	
-	# Bottom Bar
 	var bottom_hbox = HBoxContainer.new()
 	bottom_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	bottom_hbox.add_theme_constant_override("separation", 50)
+	bottom_hbox.add_theme_constant_override("separation", 30)
 	container.add_child(bottom_hbox)
 	
-	var deck_btn = _create_button("MANAGE DECK (Delete)", Color("#554466"))
+	# REROLL BUTTON
+	reroll_btn = _create_button("REROLL (1g)", Color(0.6, 0.4, 0.2))
+	reroll_btn.pressed.connect(_on_reroll_pressed)
+	bottom_hbox.add_child(reroll_btn)
+	
+	var deck_btn = _create_button("MANAGE DECK", Color("#554466"))
 	deck_btn.pressed.connect(_open_deck_management)
 	bottom_hbox.add_child(deck_btn)
 	
@@ -64,6 +74,24 @@ func _setup_ui_structure():
 	bottom_hbox.add_child(next_btn)
 	
 	_setup_deck_popup()
+	_update_reroll_button()
+
+func _update_reroll_button():
+	reroll_btn.text = "REROLL (%dg)" % Global.reroll_cost
+	if Global.coins < Global.reroll_cost:
+		reroll_btn.modulate = Color(0.5, 0.5, 0.5)
+	else:
+		reroll_btn.modulate = Color.WHITE
+
+func _on_reroll_pressed():
+	if Global.coins >= Global.reroll_cost:
+		Global.coins -= Global.reroll_cost
+		Global.reroll_cost += 1
+		AudioManager.play("buy")
+		_populate_shop_for_stage() # Refresh Items
+		_update_reroll_button()
+	else:
+		AudioManager.play("error")
 
 func _update_header():
 	var txt = "MARKET"
@@ -75,71 +103,39 @@ func _update_header():
 	message_label.text = txt
 
 func _populate_shop_for_stage():
-	# Clear any existing items from the grid
-	for c in items_grid.get_children(): 
-		c.queue_free()
+	for c in items_grid.get_children(): c.queue_free()
 	
+	# 1. ADD NUMBER SLABS (Based on Death's Gift Weights)
+	# We offer 2 random slabs every shop visit
+	for i in range(2):
+		var num = Global.get_weighted_number()
+		var letter = Global.LIMBO_LETTERS.pick_random()
+		
+		# Fated Letter Gift Logic
+		if Global.fated_letter != "" and i == 0:
+			letter = Global.fated_letter
+			
+		var slab = SlabData.new(letter, num, "common")
+		_add_slab_item(slab, 15) # Base cost 15
+	
+	# 2. ADD ARTIFACTS
 	var stage = Global.current_encounter
-	
-	# === SHOP PROGRESSION LOGIC (V3) ===
-	# Adjusts inventory quality based on which Caller you are facing.
-	
 	if stage <= 1:
-		# Caller 1: Foundation (Pure Commons)
-		# Start with cheap, reliable effects to build your engine.
-		for i in range(3):
-			_add_shop_item("common")
-			
-	elif stage == 2:
-		# Caller 2: Introduction to Power (Mostly Common + 1 Uncommon)
-		_add_shop_item("common")
+		for i in range(2): _add_shop_item("common")
+	elif stage <= 3:
 		_add_shop_item("common")
 		_add_shop_item("uncommon")
-		
-	elif stage == 3:
-		# Caller 3: Ramping Up (Uncommons become standard)
-		_add_shop_item("common")
-		_add_shop_item("uncommon")
-		_add_shop_item("uncommon")
-		
-	elif stage == 4:
-		# Caller 4: Ultra Rares Unlocked (V3 Doc)
-		# A balanced mix of mid-tier power.
-		_add_shop_item("common")
-		_add_shop_item("uncommon")
-		_add_shop_item("uncommon")
-		_add_shop_item("rare") # First chance for a big multiplier
-		
-	elif stage == 5:
-		# Caller 5: High Stakes
-		_add_shop_item("uncommon")
-		_add_shop_item("uncommon")
-		_add_shop_item("rare")
-		_add_shop_item("rare")
-		
-	elif stage >= 6:
-		# Caller 6+: Legendary Unlocked (V3 Doc)
-		# The shop offers the most powerful items for the endgame loops.
-		_add_shop_item("uncommon")
-		_add_shop_item("rare")
-		_add_shop_item("rare")
-		
-		# 10% chance for a Legendary slot, otherwise Rare/Ultra
-		if randf() < 0.1:
-			_add_shop_item("legendary")
-		else:
-			_add_shop_item("rare") # Or "ultra_rare" if you added that key
-			
 	else:
-		# Fallback / Endless Mode
-		for i in range(4):
-			_add_shop_item("random") # Ensure your get_random_id handles "random"
+		_add_shop_item("uncommon")
+		_add_shop_item("rare")
 
 func _add_shop_item(rarity: String):
 	# 1. Fetch Random Data from Definitions
 	var id = SlabDefinitions.get_random_id(rarity)
 	var def = SlabDefinitions.SLABS[id]
-	
+	var price = def.cost
+	if Global.has_effect("discount"):
+		price = int(price * 0.75)
 	# 2. Create Background Panel
 	var panel = Panel.new()
 	panel.custom_minimum_size = Vector2(300, 200) # Taller to fit description
@@ -202,14 +198,57 @@ func _add_shop_item(rarity: String):
 			btn.text = "BUY (%d)" % def.cost
 			
 		# Connect the buy signal
-		btn.pressed.connect(func(): _buy_artifact(id, def.cost, btn))
+		btn.pressed.connect(func(): _buy_artifact(id, price, btn))
 	
 	vbox.add_child(btn)
 	
 	# 7. Add to the Shop Grid
 	items_grid.add_child(panel)
-
+	
 # Helper function to handle the purchase logic
+
+func _add_slab_item(slab: SlabData, base_cost: int):
+	var price = base_cost
+	if Global.has_effect("discount"): price = int(price * 0.75)
+	
+	var desc = "Add a %s-%d to your deck." % [slab.letter, slab.number]
+	_create_shop_visual("Slab " + slab.letter + str(slab.number), desc, "common", price, func(btn): _buy_slab(slab, price, btn))
+
+# Helper to avoid code duplication
+func _create_shop_visual(title_txt, desc_txt, rarity, price, buy_callback):
+	var panel = Panel.new()
+	panel.custom_minimum_size = Vector2(300, 200)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.15, 0.18, 1)
+	style.border_color = Color(0.3, 0.3, 0.3, 1)
+	style.set_corner_radius_all(8)
+	panel.add_theme_stylebox_override("panel", style)
+	
+	var vbox = VBoxContainer.new()
+	vbox.position = Vector2(10, 10)
+	vbox.size = Vector2(280, 180)
+	panel.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = title_txt
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_override("font", CUSTOM_FONT)
+	title.add_theme_font_size_override("font_size", 32)
+	vbox.add_child(title)
+	
+	var desc = Label.new()
+	desc.text = desc_txt
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD
+	desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(desc)
+	
+	var btn = Button.new()
+	btn.text = "BUY (%d)" % price
+	btn.pressed.connect(func(): buy_callback.call(btn))
+	vbox.add_child(btn)
+	
+	items_grid.add_child(panel)
+
 func _buy_artifact(id: String, cost: int, btn: Button):
 	if Global.coins >= cost:
 		Global.coins -= cost

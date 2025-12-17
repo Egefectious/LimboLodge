@@ -91,11 +91,23 @@ func _play_cell_score(idx: int, cell: Control):
 	var points = _get_slab_points(idx)
 	_spawn_visual_for_cell(idx, cell, points)
 	
+	# === NEW: SCALING LOGIC TRIGGER ===
+	if Global.is_perfect_match(idx):
+		# Gem of Precision (+1 Base)
+		if Global.has_effect("scale_base"):
+			Global.perm_base_bonus += 1
+			_spawn_text("+1 Base Perm!", cell.global_position + Vector2(0, -30), Color.CYAN, FloatingText.Type.NORMAL)
+			
+		# Prism of Focus (+0.1 Mult)
+		if Global.has_effect("scale_mult"):
+			Global.perm_mult_bonus += 0.1
+			_spawn_text("+0.1 Mult Perm!", cell.global_position + Vector2(0, -50), Color.MAGENTA, FloatingText.Type.NORMAL)
+	# ==================================
+
 	# Add to total
 	_add_to_total(points)
 	base_points_paid[idx] = true
 	
-	# Wait for animation to mostly finish
 	await game_board.get_tree().create_timer(0.2).timeout
 
 func _spawn_visual_for_cell(idx: int, cell: Control, points: int):
