@@ -58,87 +58,64 @@ func update_display():
 	update_slab_display()
 
 func update_slab_display():
-	if not slab_container: return
-	for child in slab_container.get_children(): child.queue_free()
-	
-	current_panel_style = null
-	current_panel_node = null
+	# Clear old visuals
+	for child in slab_container.get_children():
+		child.queue_free()
 	
 	if placed_slab == null:
-		if grid_number_label: grid_number_label.visible = true
-		if letter_indicator: letter_indicator.visible = true
-		return
-	
-	if grid_number_label: grid_number_label.visible = false
-	if letter_indicator: letter_indicator.visible = false
-	
-	# --- VISUAL BUILDER ---
-	var slab_base = Control.new()
-	slab_base.custom_minimum_size = Vector2(65, 65)
-	
-	var shadow = Panel.new()
-	shadow.position = Vector2(3, 3)
-	shadow.size = Vector2(65, 65)
-	var s_style = StyleBoxFlat.new()
-	s_style.bg_color = Color(0,0,0,0.5)
-	s_style.set_corner_radius_all(8)
-	shadow.add_theme_stylebox_override("panel", s_style)
-	slab_base.add_child(shadow)
-	
-	var slab_panel = Panel.new()
-	slab_panel.size = Vector2(65, 65)
-	
-	var color_map = {"L": Color("#ff5555"), "I": Color("#ff9955"), "M": Color("#ffff55"), "B": Color("#55ff55"), "O": Color("#aa55ff")}
-	var base_color = color_map.get(placed_slab.letter, Color.WHITE)
-	
-	current_panel_style = StyleBoxFlat.new()
-	current_panel_style.bg_color = base_color
-	current_panel_style.set_corner_radius_all(8)
-	current_panel_style.set_border_width_all(3)
-	current_panel_style.border_color = Color.WHITE
-	
-	current_panel_node = slab_panel
-	
-	if placed_slab.letter == letter and placed_slab.number == grid_number:
-		current_panel_style.border_color = Color("#ffff00")
-		current_panel_style.set_border_width_all(4)
-	
-	slab_panel.add_theme_stylebox_override("panel", current_panel_style)
-	
-	var glare = Panel.new()
-	glare.position = Vector2(3, 3)
-	glare.size = Vector2(59, 28)
-	var g_style = StyleBoxFlat.new()
-	g_style.bg_color = Color(1,1,1,0.2)
-	g_style.corner_radius_top_left = 6
-	g_style.corner_radius_top_right = 6
-	glare.add_theme_stylebox_override("panel", g_style)
-	slab_panel.add_child(glare)
-	
-	var vbox = VBoxContainer.new()
-	vbox.size = Vector2(65, 65)
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", -2)
-	
-	var l_lbl = Label.new()
-	l_lbl.text = placed_slab.letter
-	l_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l_lbl.add_theme_font_override("font", CUSTOM_FONT)
-	l_lbl.add_theme_font_size_override("font_size", 32)
-	l_lbl.add_theme_color_override("font_color", Color("#1a1520"))
-	
-	var n_lbl = Label.new()
-	n_lbl.text = str(placed_slab.number)
-	n_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	n_lbl.add_theme_font_override("font", CUSTOM_FONT)
-	n_lbl.add_theme_font_size_override("font_size", 24)
-	n_lbl.add_theme_color_override("font_color", Color("#1a1520"))
-	
-	vbox.add_child(l_lbl)
-	vbox.add_child(n_lbl)
-	slab_panel.add_child(vbox)
-	slab_base.add_child(slab_panel)
-	slab_container.add_child(slab_base)
+		# --- EMPTY SOCKET VISUAL ---
+		# Hides the number/letter helper to keep it clean, 
+		# OR keeps them faint for guidance. Let's keep them faint.
+		if grid_number_label: 
+			grid_number_label.visible = true
+			grid_number_label.modulate = Color(1, 1, 1, 0.15) # Very faint
+		if letter_indicator:
+			letter_indicator.visible = true
+			letter_indicator.modulate = Color(1, 1, 1, 0.15)
+			
+		# The Socket Style (Indented)
+		var socket_style = StyleBoxFlat.new()
+		socket_style.bg_color = Color(0.05, 0.03, 0.08, 0.5) # Dark hole
+		socket_style.border_width_top = 2
+		socket_style.border_width_bottom = 2
+		socket_style.border_width_right = 2
+		socket_style.border_width_left = 2
+		# Inset shadow: Dark top/left, Light bottom/right (Opposite of raised)
+		socket_style.border_color = Color(0.0, 0.0, 0.0, 0.8) # Dark rim
+		socket_style.set_corner_radius_all(8)
+		
+		if background:
+			background.add_theme_stylebox_override("panel", socket_style)
+			
+	else:
+		# --- FILLED STONE VISUAL ---
+		if grid_number_label: grid_number_label.visible = false
+		if letter_indicator: letter_indicator.visible = false
+		
+		# Use the unified builder logic, but manually constructed to fit container
+		# Note: We can reuse the visual logic from slab_builder effectively here
+		# by creating the panels manually to ensure they fit the exact 75x75
+		
+		var stone_visual = SlabBuilder.create_visual(placed_slab, 1.0)
+		# Centering hack if needed, though SlabBuilder is sized 75x75 now
+		slab_container.add_child(stone_visual)
+		
+		# Perfect Match Highlight
+		if placed_slab.letter == letter and placed_slab.number == grid_number:
+			var glow = Panel.new()
+			glow.size = Vector2(75, 75)
+			glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var g_style = StyleBoxFlat.new()
+			g_style.draw_center = false
+			g_style.border_width_all = 2
+			g_style.border_color = Color(1, 0.9, 0.2, 1) # Gold Trim
+			g_style.set_corner_radius_all(8)
+			glow.add_theme_stylebox_override("panel", g_style)
+			slab_container.add_child(glow)
+			
+			var t = create_tween().set_loops()
+			t.tween_property(glow, "modulate:a", 0.4, 1.0)
+			t.tween_property(glow, "modulate:a", 1.0, 1.0)
 
 func highlight_active(active: bool):
 	if not current_panel_style or not current_panel_node: return

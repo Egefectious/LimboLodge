@@ -21,9 +21,14 @@ func setup(value: String, start_pos: Vector2, color: Color, type: Type = Type.NO
 		Type.NORMAL:
 			add_theme_font_size_override("font_size", 32)
 			add_theme_constant_override("outline_size", 4)
+			
+			# Add random drift X
+			var drift_x = randf_range(-40, 40)
+			
 			tween.set_parallel(true)
 			tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			tween.tween_property(self, "position:y", start_pos.y - 50, 0.5)
+			# Move Up AND Drift Side
+			tween.tween_property(self, "position", start_pos + Vector2(drift_x, -60), 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 			tween.chain().tween_property(self, "modulate:a", 0.0, 0.2)
 			
 		Type.PERFECT:
